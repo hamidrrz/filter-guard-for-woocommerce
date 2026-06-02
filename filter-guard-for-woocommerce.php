@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Filter Guard for WooCommerce
  * Description: Protects WooCommerce filtered archive URLs from crawl floods, adds SEO noindex controls, event logging, signed human cookies, rate limits, rollback, and server rule generators.
- * Version: 1.0
+ * Version: 1.5.8
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -20,10 +20,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-final class Filter_Guard_For_Woocommerce_Plugin
+final class Filter_Guard_For_WooCommerce_Plugin
 {
-    private const VERSION = '1.4.1';
-    private const DB_VERSION = '1.4.1';
+    private const VERSION = '1.5.8';
+    private const DB_VERSION = '1.4.8';
     private const DB_VERSION_OPTION = 'woo_filter_guard_db_version';
     private const OPTION = 'woo_filter_guard_options';
     private const OLD_OPTION = 'wfg_options';
@@ -40,6 +40,8 @@ final class Filter_Guard_For_Woocommerce_Plugin
     private const LEGACY_ROBOTS_BEGIN = '# BEGIN WOO_FILTER_GUARD_ROBOTS';
     private const LEGACY_ROBOTS_END = '# END WOO_FILTER_GUARD_ROBOTS';
     private const CRON_HOOK = 'woo_filter_guard_cleanup_runtime';
+    private const HEALTH_CHECK_TOKEN_TRANSIENT = 'woo_filter_guard_health_check_token';
+    private const HTACCESS_DIAG_OPTION = 'woo_filter_guard_htaccess_diagnostics';
 
     private static $instance = null;
     private $filesystem = null;
@@ -68,11 +70,13 @@ final class Filter_Guard_For_Woocommerce_Plugin
         if (is_admin()) {
             add_action('admin_menu', [$this, 'register_admin_page']);
             add_action('admin_init', [$this, 'handle_admin_actions']);
+            add_action('admin_init', [$this, 'maybe_seed_health_check_test_path'], 20);
             add_action('admin_notices', [$this, 'admin_notices']);
             add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
             add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
         }
     }
+
 
     public static function defaults(): array
     {
@@ -100,6 +104,8 @@ final class Filter_Guard_For_Woocommerce_Plugin
             'allow_ips' => '',
             'allow_user_agent_regex' => '',
             'allow_roles' => 'administrator,shop_manager',
+            'trusted_proxy_mode' => 'off', // off, cloudflare, custom.
+            'trusted_proxy_cidrs' => '',
             'max_filter_params' => 4,
             'max_query_length' => 700,
             'complexity_cookie_score' => 4,
@@ -226,6 +232,35 @@ final class Filter_Guard_For_Woocommerce_Plugin
         update_option(self::OPTION, array_merge(self::defaults(), $new), false);
     }
 
+    public function maybe_seed_health_check_test_path(): void
+    {
+        if (!current_user_can('manage_options') || !$this->is_plugin_settings_page()) {
+            return;
+        }
+        if ($this->server_value('REQUEST_METHOD') === 'POST') {
+            return;
+        }
+
+        $opts = $this->options();
+        if ($this->sanitize_health_check_test_path((string) ($opts['health_check_test_path'] ?? '')) !== '') {
+            return;
+        }
+
+        $path = $this->auto_detect_health_check_test_path();
+        if ($path === '') {
+            return;
+        }
+
+        $opts['health_check_test_path'] = $path;
+        $this->update_options($opts);
+    }
+
+    private function is_plugin_settings_page(): bool
+    {
+        $page = filter_input(INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        return sanitize_key((string) $page) === 'filter-guard-for-woocommerce';
+    }
+
     private function modes(): array
     {
         return [
@@ -244,7 +279,15 @@ final class Filter_Guard_For_Woocommerce_Plugin
         if ($hook_suffix !== 'settings_page_filter-guard-for-woocommerce') {
             return;
         }
+        wp_enqueue_style('dashicons');
         wp_enqueue_style('filter-guard-for-woocommerce-admin', plugin_dir_url(__FILE__) . 'assets/admin.css', [], self::VERSION);
+        wp_enqueue_script('filter-guard-for-woocommerce-admin', plugin_dir_url(__FILE__) . 'assets/admin.js', [], self::VERSION, true);
+        wp_localize_script('filter-guard-for-woocommerce-admin', 'FilterGuardForWooCommerceAdmin', [
+            'expandAll' => __('Expand all settings', 'filter-guard-for-woocommerce'),
+            'collapseAdvanced' => __('Collapse advanced settings', 'filter-guard-for-woocommerce'),
+            'collapsed' => __('Collapsed', 'filter-guard-for-woocommerce'),
+            'expanded' => __('Expanded', 'filter-guard-for-woocommerce'),
+        ]);
     }
 
     public function plugin_action_links(array $links): array
@@ -611,7 +654,68 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function remote_ip(): string
     {
-        return $this->server_value('REMOTE_ADDR');
+        $remote = $this->sanitize_ip($this->server_value('REMOTE_ADDR'));
+        $opts = $this->options();
+        $mode = (string) ($opts['trusted_proxy_mode'] ?? 'off');
+        if ($mode === 'off' || $remote === '' || !$this->remote_addr_is_trusted_proxy($remote, $opts)) {
+            return $remote;
+        }
+
+        if ($mode === 'cloudflare') {
+            $cf = $this->sanitize_ip($this->server_value('HTTP_CF_CONNECTING_IP'));
+            if ($cf !== '') {
+                return $cf;
+            }
+        }
+
+        $xff = $this->server_value('HTTP_X_FORWARDED_FOR');
+        if ($xff !== '') {
+            $parts = array_map('trim', explode(',', $xff));
+            foreach ($parts as $part) {
+                $candidate = $this->sanitize_ip($part);
+                if ($candidate !== '') {
+                    return $candidate;
+                }
+            }
+        }
+
+        return $remote;
+    }
+
+    private function sanitize_ip(string $ip): string
+    {
+        $ip = trim($ip);
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '';
+    }
+
+    private function remote_addr_is_trusted_proxy(string $remote, array $opts): bool
+    {
+        $mode = (string) ($opts['trusted_proxy_mode'] ?? 'off');
+        if ($mode === 'cloudflare') {
+            foreach ($this->cloudflare_proxy_cidrs() as $cidr) {
+                if ($this->ip_in_cidr($remote, $cidr)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if ($mode === 'custom') {
+            foreach (preg_split('/[\r\n,]+/', (string) ($opts['trusted_proxy_cidrs'] ?? '')) ?: [] as $cidr) {
+                $cidr = trim((string) $cidr);
+                if ($cidr !== '' && $this->ip_in_cidr($remote, $cidr)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private function cloudflare_proxy_cidrs(): array
+    {
+        return [
+            '173.245.48.0/20','103.21.244.0/22','103.22.200.0/22','103.31.4.0/22','141.101.64.0/18','108.162.192.0/18','190.93.240.0/20','188.114.96.0/20','197.234.240.0/22','198.41.128.0/17','162.158.0.0/15','104.16.0.0/13','104.24.0.0/14','172.64.0.0/13','131.0.72.0/22',
+            '2400:cb00::/32','2606:4700::/32','2803:f800::/32','2405:b500::/32','2405:8100::/32','2a06:98c0::/29','2c0f:f248::/32',
+        ];
     }
 
     private function server_value(string $key): string
@@ -647,30 +751,36 @@ final class Filter_Guard_For_Woocommerce_Plugin
             if (substr($item, -1) === '*' && strpos($ip, rtrim($item, '*')) === 0) {
                 return true;
             }
-            if (strpos($item, '/') !== false && $this->ipv4_in_cidr($ip, $item)) {
+            if (strpos($item, '/') !== false && $this->ip_in_cidr($ip, $item)) {
                 return true;
             }
         }
         return false;
     }
 
-    private function ipv4_in_cidr(string $ip, string $cidr): bool
+    private function ip_in_cidr(string $ip, string $cidr): bool
     {
-        if (strpos($ip, ':') !== false || strpos($cidr, ':') !== false) {
+        [$network, $prefix] = array_pad(explode('/', trim($cidr), 2), 2, null);
+        $ip_bin = @inet_pton($ip);
+        $net_bin = @inet_pton((string) $network);
+        if ($ip_bin === false || $net_bin === false || strlen($ip_bin) !== strlen($net_bin)) {
             return false;
         }
-        [$net, $mask] = array_pad(explode('/', $cidr, 2), 2, null);
-        $mask = (int) $mask;
-        if ($mask < 0 || $mask > 32) {
+        $prefix = (int) $prefix;
+        $max_bits = strlen($ip_bin) * 8;
+        if ($prefix < 0 || $prefix > $max_bits) {
             return false;
         }
-        $ip_long = ip2long($ip);
-        $net_long = ip2long($net);
-        if ($ip_long === false || $net_long === false) {
+        $full_bytes = intdiv($prefix, 8);
+        $remaining_bits = $prefix % 8;
+        if ($full_bytes > 0 && substr($ip_bin, 0, $full_bytes) !== substr($net_bin, 0, $full_bytes)) {
             return false;
         }
-        $mask_long = -1 << (32 - $mask);
-        return (($ip_long & $mask_long) === ($net_long & $mask_long));
+        if ($remaining_bits === 0) {
+            return true;
+        }
+        $mask = (0xff << (8 - $remaining_bits)) & 0xff;
+        return (ord($ip_bin[$full_bytes]) & $mask) === (ord($net_bin[$full_bytes]) & $mask);
     }
 
     public function filter_virtual_robots_txt(string $output, bool $public): string
@@ -711,26 +821,33 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     public function handle_admin_actions(): void
     {
-        $raw_action = filter_input(INPUT_POST, 'woo_filter_guard_action', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        if ($raw_action === null || $raw_action === false || $raw_action === '') {
-            $raw_action = filter_input(INPUT_POST, 'wfg_action', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        $raw_action = '';
+        $posted_action = filter_input(INPUT_POST, 'woo_filter_guard_action', FILTER_UNSAFE_RAW);
+        if ($posted_action === null || $posted_action === false || !is_scalar($posted_action)) {
+            $posted_action = filter_input(INPUT_POST, 'wfg_action', FILTER_UNSAFE_RAW);
         }
-        if (!current_user_can('manage_options') || $raw_action === null || $raw_action === false || $raw_action === '') {
+        if ($posted_action !== null && $posted_action !== false && is_scalar($posted_action)) {
+            $raw_action = sanitize_text_field((string) $posted_action);
+        }
+        if (!current_user_can('manage_options') || $raw_action === '') {
             return;
         }
         check_admin_referer('woo_filter_guard_save_settings');
-        $action = sanitize_key((string) $raw_action);
+        $action = sanitize_key($raw_action);
 
         if ($action === 'save') {
             $this->handle_save_action();
         }
         if ($action === 'rewrite_htaccess') {
             $opts = $this->options();
-            if (!$this->blocking_server_rules_available($opts)) {
-                $this->set_admin_notice('error', __('Blocking .htaccess rules are not written while protection mode is Off, Monitor, or SEO Soft Mode. Switch to Cookie, Cookie + Referer, Strict, or Emergency first.', 'filter-guard-for-woocommerce'));
-                $this->redirect_with_message('htaccess_safe_mode');
+            if (!$this->htaccess_managed_rules_needed($opts)) {
+                $ok = $this->remove_htaccess_guard('manual_rewrite_safe_mode');
+                $this->set_admin_notice($ok ? 'success' : 'error', $ok ? __('.htaccess managed block removed for the current protection mode. Cookie modes are enforced in WordPress/PHP.', 'filter-guard-for-woocommerce') : __('Could not remove the managed .htaccess guard. Check file permissions or remove the managed block manually.', 'filter-guard-for-woocommerce'));
+                $this->redirect_with_message('htaccess_safe_mode_removed');
             }
-            $ok = $this->write_blocked_light_file() && $this->write_htaccess_guard('manual_rewrite');
+            $blocked_light_ok = $this->blocking_server_rules_available($opts) ? $this->write_blocked_light_file() : true;
+            $guard_ok = $this->write_htaccess_guard('manual_rewrite');
+            $ok = $blocked_light_ok && $guard_ok;
             $this->set_admin_notice($ok ? 'success' : 'error', $ok ? __('.htaccess guard written.', 'filter-guard-for-woocommerce') : __('Could not write .htaccess guard. Validate regex settings and file permissions.', 'filter-guard-for-woocommerce'));
             $this->redirect_with_message('htaccess_written');
         }
@@ -780,31 +897,49 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function current_post_nonce_is_valid(): bool
     {
-        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        return is_string($nonce) && wp_verify_nonce(sanitize_text_field(wp_unslash($nonce)), 'woo_filter_guard_save_settings');
+        $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_UNSAFE_RAW);
+        if ($nonce === null || $nonce === false || !is_scalar($nonce)) {
+            return false;
+        }
+        return (bool) wp_verify_nonce(sanitize_text_field((string) $nonce), 'woo_filter_guard_save_settings');
+    }
+
+    private function post_raw(string $key, string $default = ''): string
+    {
+        if (!$this->current_post_nonce_is_valid()) {
+            return $default;
+        }
+        $value = filter_input(INPUT_POST, $key, FILTER_UNSAFE_RAW);
+        if ($value === null || $value === false || !is_scalar($value)) {
+            return $default;
+        }
+        return sanitize_textarea_field((string) $value);
     }
 
     private function post_flag(string $key): bool
     {
-        return $this->current_post_nonce_is_valid() && filter_input(INPUT_POST, $key, FILTER_DEFAULT) !== null;
+        if (!$this->current_post_nonce_is_valid()) {
+            return false;
+        }
+        $value = filter_input(INPUT_POST, $key, FILTER_UNSAFE_RAW);
+        return $value !== null && $value !== false;
     }
 
     private function post_text(string $key, string $default = ''): string
     {
-        if (!$this->current_post_nonce_is_valid()) {
-            return $default;
-        }
-        $value = filter_input(INPUT_POST, $key, FILTER_UNSAFE_RAW);
-        return is_scalar($value) ? sanitize_text_field(wp_unslash((string) $value)) : $default;
+        $value = $this->post_raw($key, $default);
+        return sanitize_text_field($value);
     }
 
     private function post_textarea(string $key, string $default = ''): string
     {
-        if (!$this->current_post_nonce_is_valid()) {
-            return $default;
-        }
-        $value = filter_input(INPUT_POST, $key, FILTER_UNSAFE_RAW);
-        return is_scalar($value) ? sanitize_textarea_field(wp_unslash((string) $value)) : $default;
+        $value = $this->post_raw($key, $default);
+        return sanitize_textarea_field($value);
+    }
+
+    private function post_regex(string $key, string $default = ''): string
+    {
+        return $this->sanitize_regex_fragment($this->post_raw($key, $default));
     }
 
     private function post_key(string $key, string $default = ''): string
@@ -835,12 +970,17 @@ final class Filter_Guard_For_Woocommerce_Plugin
         }
         $opts['cookie_name'] = $this->sanitize_cookie_name($this->post_text('cookie_name', self::defaults()['cookie_name']));
         $opts['cookie_ttl'] = max(300, min(86400, $this->post_int('cookie_ttl', 7200)));
-        $opts['protected_paths_regex'] = $this->sanitize_regex_fragment($this->post_textarea('protected_paths_regex', self::defaults()['protected_paths_regex']));
-        $opts['query_keys_regex'] = $this->sanitize_regex_fragment($this->post_textarea('query_keys_regex', self::defaults()['query_keys_regex']));
-        $opts['allowed_cookie_regex'] = $this->sanitize_regex_fragment($this->post_textarea('allowed_cookie_regex', self::defaults()['allowed_cookie_regex']));
-        $opts['allow_ips'] = $this->sanitize_multiline($this->post_textarea('allow_ips', ''));
-        $opts['allow_user_agent_regex'] = $this->sanitize_regex_fragment($this->post_textarea('allow_user_agent_regex', ''));
+        $opts['protected_paths_regex'] = $this->post_regex('protected_paths_regex', self::defaults()['protected_paths_regex']);
+        $opts['query_keys_regex'] = $this->post_regex('query_keys_regex', self::defaults()['query_keys_regex']);
+        $opts['allowed_cookie_regex'] = $this->post_regex('allowed_cookie_regex', self::defaults()['allowed_cookie_regex']);
+        $opts['allow_ips'] = $this->sanitize_multiline($this->post_raw('allow_ips', ''));
+        $opts['allow_user_agent_regex'] = $this->post_regex('allow_user_agent_regex', '');
         $opts['allow_roles'] = $this->sanitize_roles($this->post_text('allow_roles', self::defaults()['allow_roles']));
+        $opts['trusted_proxy_mode'] = $this->post_key('trusted_proxy_mode', self::defaults()['trusted_proxy_mode']);
+        if (!in_array($opts['trusted_proxy_mode'], ['off', 'cloudflare', 'custom'], true)) {
+            $opts['trusted_proxy_mode'] = 'off';
+        }
+        $opts['trusted_proxy_cidrs'] = $this->sanitize_multiline($this->post_raw('trusted_proxy_cidrs', ''));
         $opts['max_filter_params'] = max(0, min(50, $this->post_int('max_filter_params', 4)));
         $opts['max_query_length'] = max(0, min(8000, $this->post_int('max_query_length', 700)));
         $opts['complexity_cookie_score'] = max(0, min(50, $this->post_int('complexity_cookie_score', 4)));
@@ -875,7 +1015,11 @@ final class Filter_Guard_For_Woocommerce_Plugin
         $opts['rate_limit_block_seconds'] = max(60, min(86400, $this->post_int('rate_limit_block_seconds', 600)));
         $opts['verified_bot_cache_ttl'] = max(300, min(604800, $this->post_int('verified_bot_cache_ttl', 86400)));
         $opts['verified_bot_max_score'] = max(0, min(80, $this->post_int('verified_bot_max_score', 6)));
-        $opts['health_check_test_path'] = $this->sanitize_health_check_test_path($this->post_text('health_check_test_path', ''));
+        $health_check_test_path = $this->sanitize_health_check_test_path($this->post_text('health_check_test_path', ''));
+        if ($health_check_test_path === '') {
+            $health_check_test_path = $this->auto_detect_health_check_test_path();
+        }
+        $opts['health_check_test_path'] = $health_check_test_path;
 
         $errors = $this->validate_options($opts);
         if ($errors) {
@@ -895,10 +1039,14 @@ final class Filter_Guard_For_Woocommerce_Plugin
     private function apply_file_rules(array $opts, string $reason = 'apply_rules'): bool
     {
         $ok = true;
-        if (!empty($opts['manage_htaccess']) && !in_array($opts['protection_mode'], ['off', 'seo_only', 'monitor'], true)) {
-            $ok = $this->write_blocked_light_file() && $this->write_htaccess_guard($reason) && $ok;
+        if (!empty($opts['manage_htaccess']) && $this->htaccess_managed_rules_needed($opts)) {
+            $blocked_light_ok = $this->blocking_server_rules_available($opts) ? $this->write_blocked_light_file() : true;
+            $htaccess_ok = $this->write_htaccess_guard($reason);
+            $ok = $blocked_light_ok && $htaccess_ok && $ok;
         } else {
-            $ok = $this->remove_htaccess_guard($reason) && $ok;
+            // Cookie and Cookie + Referer modes must not leave stale pre-PHP filtered-URL blocks in .htaccess.
+            // Removal is executed even when blocked-light.html cannot be written, so stale 403 rules are not preserved accidentally.
+            $ok = $this->remove_htaccess_guard($reason . '_safe_mode') && $ok;
         }
         if (!empty($opts['manage_robots_txt']) && $this->robots_file_rules_available($opts)) {
             $ok = $this->write_robots_txt_rules($reason) && $ok;
@@ -967,28 +1115,33 @@ final class Filter_Guard_For_Woocommerce_Plugin
         <div class="wrap filter-guard-for-woocommerce-wrap">
             <h1><?php esc_html_e('Filter Guard for WooCommerce', 'filter-guard-for-woocommerce'); ?> <span class="filter-guard-for-woocommerce-version">v<?php echo esc_html(self::VERSION); ?></span></h1>
             <p><?php esc_html_e('Crawl-flood protection, SEO soft control, signed human cookies, event logging, local rate limiting, rollback, and server rule generation for WooCommerce filtered archive URLs.', 'filter-guard-for-woocommerce'); ?></p>
-            <div class="notice notice-warning inline"><p><?php esc_html_e('Apache/LiteSpeed .htaccess rules run before WordPress. Role allowlists only apply to PHP-level checks, not to pre-PHP server blocks.', 'filter-guard-for-woocommerce'); ?></p></div>
+            <?php if ($htaccess_present && $this->blocking_server_rules_available($opts)): ?>
+                <div class="notice notice-info inline filter-guard-for-woocommerce-pre-php-notice"><p><strong><?php esc_html_e('Server guard is active:', 'filter-guard-for-woocommerce'); ?></strong> <?php esc_html_e('Strict or Emergency server rules can block requests before WordPress loads. Cookie mode intentionally avoids filtered-URL pre-PHP blocking so normal shoppers can be validated by PHP.', 'filter-guard-for-woocommerce'); ?></p></div>
+            <?php endif; ?>
+            <?php $this->render_mode_guidance($opts); ?>
 
-            <h2><?php esc_html_e('Live Dashboard', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Live Dashboard', 'filter-guard-for-woocommerce'), 'section_live_dashboard'); ?>
             <div class="filter-guard-for-woocommerce-cards">
-                <?php $this->stat_card(__('Blocked 10m', 'filter-guard-for-woocommerce'), (string) $stats['blocked_10m']); ?>
-                <?php $this->stat_card(__('Allowed 10m', 'filter-guard-for-woocommerce'), (string) $stats['allowed_10m']); ?>
-                <?php $this->stat_card(__('Distinct IPs 10m', 'filter-guard-for-woocommerce'), (string) $stats['distinct_ips_10m']); ?>
+                <?php $this->stat_card(__('PHP blocked 10m', 'filter-guard-for-woocommerce'), (string) $stats['blocked_10m']); ?>
+                <?php $this->stat_card(__('PHP allowed 10m', 'filter-guard-for-woocommerce'), (string) $stats['allowed_10m']); ?>
+                <?php $this->stat_card(__('PHP distinct IPs 10m', 'filter-guard-for-woocommerce'), (string) $stats['distinct_ips_10m']); ?>
                 <?php $this->stat_card(__('Mode', 'filter-guard-for-woocommerce'), $opts['protection_mode']); ?>
-                <?php $this->stat_card(__('Top query key', 'filter-guard-for-woocommerce'), $stats['top_query_key'] ?: '-'); ?>
+                <?php $this->stat_card(__('Server guard', 'filter-guard-for-woocommerce'), ($htaccess_present && $this->blocking_server_rules_available($opts)) ? __('Pre-PHP active', 'filter-guard-for-woocommerce') : __('PHP only / inactive', 'filter-guard-for-woocommerce')); ?>
                 <?php $this->stat_card(__('Average score 10m', 'filter-guard-for-woocommerce'), (string) $stats['avg_score_10m']); ?>
             </div>
+            <p class="description filter-guard-for-woocommerce-dashboard-scope"><strong><?php esc_html_e('Dashboard scope:', 'filter-guard-for-woocommerce'); ?></strong> <?php esc_html_e('These counters are based on WordPress/PHP event-log entries. They cannot count requests stopped by Apache/LiteSpeed before WordPress starts.', 'filter-guard-for-woocommerce'); ?></p>
 
             <table class="widefat striped filter-guard-for-woocommerce-table">
                 <tbody>
                 <tr><th><?php esc_html_e('Protection mode', 'filter-guard-for-woocommerce'); ?></th><td><strong><?php echo esc_html($this->modes()[$opts['protection_mode']] ?? $opts['protection_mode']); ?></strong></td></tr>
                 <tr><th><?php esc_html_e('Current human cookie name', 'filter-guard-for-woocommerce'); ?></th><td><code><?php echo esc_html($this->current_cookie_name($opts)); ?></code></td></tr>
-                <tr><th><?php esc_html_e('.htaccess guard', 'filter-guard-for-woocommerce'); ?></th><td><?php echo $htaccess_present ? '<strong class="filter-guard-for-woocommerce-ok">' . esc_html__('Present', 'filter-guard-for-woocommerce') . '</strong>' : '<strong class="filter-guard-for-woocommerce-bad">' . esc_html__('Not present', 'filter-guard-for-woocommerce') . '</strong>'; ?></td></tr>
-                <tr><th><?php esc_html_e('Light block page', 'filter-guard-for-woocommerce'); ?></th><td><?php echo $blocked_present ? '<strong class="filter-guard-for-woocommerce-ok">' . esc_html__('Present', 'filter-guard-for-woocommerce') . '</strong>' : '<strong class="filter-guard-for-woocommerce-bad">' . esc_html__('Missing', 'filter-guard-for-woocommerce') . '</strong>'; ?></td></tr>
-                <tr><th><?php esc_html_e('robots.txt block', 'filter-guard-for-woocommerce'); ?></th><td><?php echo $robots_present ? '<strong class="filter-guard-for-woocommerce-ok">' . esc_html__('Present', 'filter-guard-for-woocommerce') . '</strong>' : '<strong class="filter-guard-for-woocommerce-bad">' . esc_html__('Not present / virtual only', 'filter-guard-for-woocommerce') . '</strong>'; ?></td></tr>
+                <tr><th><?php esc_html_e('.htaccess guard', 'filter-guard-for-woocommerce'); ?></th><td><?php if ($htaccess_present): ?><strong class="filter-guard-for-woocommerce-ok"><?php esc_html_e('Present', 'filter-guard-for-woocommerce'); ?></strong><?php else: ?><strong class="filter-guard-for-woocommerce-bad"><?php esc_html_e('Not present', 'filter-guard-for-woocommerce'); ?></strong><?php endif; ?></td></tr>
+                <tr><th><?php esc_html_e('Light block page', 'filter-guard-for-woocommerce'); ?></th><td><?php if ($blocked_present): ?><strong class="filter-guard-for-woocommerce-ok"><?php esc_html_e('Present', 'filter-guard-for-woocommerce'); ?></strong><?php else: ?><strong class="filter-guard-for-woocommerce-bad"><?php esc_html_e('Missing', 'filter-guard-for-woocommerce'); ?></strong><?php endif; ?></td></tr>
+                <tr><th><?php esc_html_e('robots.txt block', 'filter-guard-for-woocommerce'); ?></th><td><?php if ($robots_present): ?><strong class="filter-guard-for-woocommerce-ok"><?php esc_html_e('Present', 'filter-guard-for-woocommerce'); ?></strong><?php else: ?><strong class="filter-guard-for-woocommerce-bad"><?php esc_html_e('Not present / virtual only', 'filter-guard-for-woocommerce'); ?></strong><?php endif; ?></td></tr>
                 </tbody>
             </table>
 
+            <?php $this->render_htaccess_diagnostics($opts); ?>
             <?php $this->render_last_self_test($tests); ?>
             <?php $this->render_recent_events($events); ?>
             <?php $this->render_settings_form($opts); ?>
@@ -1004,19 +1157,180 @@ final class Filter_Guard_For_Woocommerce_Plugin
         echo '<div class="filter-guard-for-woocommerce-card"><span>' . esc_html($label) . '</span><strong>' . esc_html($value) . '</strong></div>';
     }
 
+    private function tooltip_texts(): array
+    {
+        return [
+            'section_live_dashboard' => __('Quick operational snapshot for the last 10 minutes. These counters are PHP-level event-log counters. If Apache/LiteSpeed .htaccess guard blocks a request before WordPress loads, the request is protected but cannot be counted here; use server access logs for those pre-PHP hits.', 'filter-guard-for-woocommerce'),
+            'section_last_self_test' => __('Shows the latest internal health checks. These tests verify the homepage, the configured WooCommerce shop/category test path, protected filtered URLs, cookie behavior, XML-RPC blocking, and robots.txt availability.', 'filter-guard-for-woocommerce'),
+            'section_recent_events' => __('Recent allow/block/noindex/mode/test events. This section helps you confirm which URLs matched the policy, which action was taken, and whether traffic looks like normal filtering or automated crawling.', 'filter-guard-for-woocommerce'),
+            'section_htaccess_diagnostics' => __('Shows the exact root .htaccess path, whether the file is readable and writable, whether a managed Filter Guard block is present, the current file hash, and the last write/remove result. Use this when server rules do not appear to save.', 'filter-guard-for-woocommerce'),
+            'section_protection' => __('Controls the main protection policy and the server-level guard. Start with Monitor Only to learn traffic patterns, use SEO Soft for indexing control, use Cookie mode for normal protection, and reserve Cookie + Referer, Strict, or Emergency for active floods.', 'filter-guard-for-woocommerce'),
+            'section_complexity' => __('Defines how expensive a filtered archive URL is. More filter parameters, longer queries, and configured query keys increase the score. The score decides when cookies are required, when requests are blocked, and when emergency behavior should apply.', 'filter-guard-for-woocommerce'),
+            'section_cookie' => __('Configures the lightweight first-party human cookie. Signed and rotating cookies make simple bot replay harder while keeping real visitors fast after their first valid page view. Very strict binding can affect visitors behind changing networks.', 'filter-guard-for-woocommerce'),
+            'section_event_log' => __('Controls what the plugin records and how much personally identifiable data is stored. Hash or anonymize IPs for privacy, keep retention short, and enable sampling to avoid database pressure during large crawl floods.', 'filter-guard-for-woocommerce'),
+            'section_auto_emergency' => __('Automatically escalates protection when traffic volume crosses configured thresholds, then returns to the base recovery mode after the site is quiet. Tune thresholds carefully so seasonal traffic spikes do not trigger aggressive blocking.', 'filter-guard-for-woocommerce'),
+            'section_rate_limit' => __('Optional PHP-level rate limiting using WordPress transients or object cache. It is useful as a safety net, but high-volume attacks are better handled with .htaccess, Nginx, Cloudflare, or other edge/server rules.', 'filter-guard-for-woocommerce'),
+            'section_verified_bots' => __('Validates declared search bots before trusting their user-agent names. This protects against fake Googlebot/Bingbot strings while allowing verified crawlers to receive gentler handling where appropriate.', 'filter-guard-for-woocommerce'),
+            'section_health' => __('Safety controls for rule deployment and cleanup. Health checks catch broken server rules after saving; rollback can restore the latest backup; uninstall cleanup controls whether generated files are removed when deleting the plugin.', 'filter-guard-for-woocommerce'),
+            'section_rule_generators' => __('Copy-ready Apache/LiteSpeed, Nginx, and Cloudflare rules for environments where automatic file writing is not possible or where edge blocking is preferred. Apply only the rule set that matches your server/CDN.', 'filter-guard-for-woocommerce'),
+            'section_backups' => __('Lists backups created before the plugin changes managed files such as .htaccess, robots.txt, or blocked-light.html. Use these backups to recover quickly from a bad rule deployment.', 'filter-guard-for-woocommerce'),
+            'section_manual_actions' => __('Manual maintenance tools for tests, rewriting/removing managed rules, restoring the latest backup, rotating cookie secrets, and exporting event logs. Use destructive actions carefully on production sites.', 'filter-guard-for-woocommerce'),
+            'protection_mode' => __('Main behavior switch. Monitor Only is safest for observation; SEO Soft adds indexing controls; Cookie mode protects filtered URLs while allowing real visitors; Cookie + Referer is stricter; Strict/Emergency are high-impact blocking modes.', 'filter-guard-for-woocommerce'),
+            'base_recovery_mode' => __('The mode Auto Emergency returns to after the recovery period. Choose a stable everyday mode such as Monitor, SEO Soft, or Cookie; do not use Emergency as the recovery target.', 'filter-guard-for-woocommerce'),
+            'manage_htaccess' => __('When enabled on Apache/LiteSpeed, the plugin can write server-level rules. Filtered-URL pre-PHP blocking is intentionally limited to Strict and Emergency modes to avoid false blocking real shoppers in Cookie modes.', 'filter-guard-for-woocommerce'),
+            'block_xmlrpc' => __('Blocks xmlrpc.php at PHP and managed .htaccess levels. Enable this when XML-RPC is not needed for Jetpack, mobile publishing, or legacy integrations.', 'filter-guard-for-woocommerce'),
+            'block_response' => __('HTTP response used for blocked requests. 403 clearly means forbidden; 404 hides the route from basic bots. Keep behavior consistent with your SEO and monitoring expectations.', 'filter-guard-for-woocommerce'),
+            'protected_paths_regex' => __('Regular expression for URL paths that should be protected, usually WooCommerce shop/category archives. Keep it narrow, for example product-category and shop paths, so normal pages are not affected.', 'filter-guard-for-woocommerce'),
+            'query_keys_regex' => __('Regular expression for expensive query parameter names such as filter_*, query_type_*, price filters, ordering, stock status, and view changes. These keys identify layered-navigation crawl targets.', 'filter-guard-for-woocommerce'),
+            'allowed_cookie_regex' => __('Optional PHP-only compatible cookie-name regex. Matching cookie names still require the normal signed HMAC value, so arbitrary cookie values are not trusted.', 'filter-guard-for-woocommerce'),
+            'allow_ips' => __('IPs or CIDR/range patterns that bypass PHP-level checks. Use only for trusted admins, monitoring systems, or known internal networks. This does not bypass pre-PHP .htaccess blocking.', 'filter-guard-for-woocommerce'),
+            'allow_user_agent_regex' => __('Optional PHP-level bypass for trusted user agents. Keep this very narrow because user-agent strings are easy to spoof unless combined with verified-bot checks.', 'filter-guard-for-woocommerce'),
+            'allow_roles' => __('Comma-separated WordPress role slugs allowed through PHP-level protection. This is useful for admins/shop managers, but server-level .htaccess rules run before WordPress knows the user role.', 'filter-guard-for-woocommerce'),
+            'max_filter_params' => __('Number of filter/query parameters allowed before the URL is considered too complex. Lower values are stricter; higher values allow deeper customer filtering but may increase crawl load.', 'filter-guard-for-woocommerce'),
+            'max_query_length' => __('Maximum full query-string length before extra score is added. Very long query strings often indicate crawler-generated combinations or attack traffic.', 'filter-guard-for-woocommerce'),
+            'complexity_cookie_score' => __('Score level where the plugin starts requiring a valid human cookie in cookie-based modes. Set below the block score so real users can be challenged before being blocked.', 'filter-guard-for-woocommerce'),
+            'complexity_block_score' => __('Score level where the plugin blocks a request in blocking modes. Increase this if legitimate filter combinations are being blocked; decrease it during severe floods.', 'filter-guard-for-woocommerce'),
+            'complexity_emergency_score' => __('Very high score threshold that marks a request as emergency-level complexity. Use this to catch extreme filter combinations even before volume-based thresholds trigger.', 'filter-guard-for-woocommerce'),
+            'seo_soft_max_score' => __('In SEO Soft Mode, filter URLs up to this score can receive noindex/canonical handling while higher-score URLs can be redirected to a clean URL or blocked, depending on the selected action.', 'filter-guard-for-woocommerce'),
+            'set_cookie' => __('Sets a lightweight first-party HttpOnly cookie for real visitors. Cookie-based protection depends on this unless another trusted flow sets a compatible cookie.', 'filter-guard-for-woocommerce'),
+            'cookie_name' => __('Base name for the human cookie. Keep the default unless you have a naming conflict or need to coordinate with existing server/CDN rules.', 'filter-guard-for-woocommerce'),
+            'cookie_ttl' => __('Cookie lifetime in seconds. Shorter TTLs reduce replay window; longer TTLs reduce repeat challenges for real shoppers.', 'filter-guard-for-woocommerce'),
+            'cookie_hardening' => __('Adds HMAC signing, optional daily name rotation, and optional binding to User-Agent or IP prefix. Stronger binding improves abuse resistance but can affect visitors whose browser/network changes frequently.', 'filter-guard-for-woocommerce'),
+            'enable_event_log' => __('Enables recording of important plugin events such as blocked requests, allowed filtered requests, noindex decisions, mode changes, and self-tests.', 'filter-guard-for-woocommerce'),
+            'event_log_storage' => __('Where events are stored. Database is easiest to review in WordPress; NDJSON file is useful for server-side analysis; Both gives redundancy but writes more data.', 'filter-guard-for-woocommerce'),
+            'ip_logging_mode' => __('Controls IP privacy in logs. Hash only is privacy-friendly, anonymized keeps partial troubleshooting value, and full IP should be used only when you need exact forensic data.', 'filter-guard-for-woocommerce'),
+            'retention_days' => __('Number of days to keep logs before cleanup. Short retention reduces database size and privacy exposure; longer retention helps investigate recurring crawl patterns.', 'filter-guard-for-woocommerce'),
+            'log_throttling' => __('Sampling rule for high traffic. After the configured events-per-minute threshold, the plugin records only one out of every N repetitive events while counters still drive protection decisions.', 'filter-guard-for-woocommerce'),
+            'emergency_log_pressure' => __('Reduces repetitive per-request logging while Emergency mode is active. This protects the database and filesystem when the site is already under heavy crawl pressure.', 'filter-guard-for-woocommerce'),
+            'enable_auto_emergency' => __('Turns on automatic escalation to Strict/Emergency based on request volume and IP diversity. Keep disabled if you prefer manual mode changes only.', 'filter-guard-for-woocommerce'),
+            'auto_window_minutes' => __('Rolling time window used to count filtered and blocked requests for Auto Emergency decisions. Shorter windows react faster; longer windows are smoother but slower.', 'filter-guard-for-woocommerce'),
+            'strict_threshold' => __('Number of matched requests within the window required to move into Strict mode. Set above normal peak traffic but below flood levels.', 'filter-guard-for-woocommerce'),
+            'emergency_threshold' => __('Number of matched or blocked requests within the window required to move into Emergency mode. This should be higher than the Strict threshold.', 'filter-guard-for-woocommerce'),
+            'distinct_ip_threshold' => __('Minimum number of different IPs seen in the window before emergency escalation. Helps distinguish distributed crawl floods from one aggressive visitor or tool.', 'filter-guard-for-woocommerce'),
+            'recovery_minutes' => __('Quiet period before Auto Emergency returns to the base recovery mode. Increase it if attacks come in waves; decrease it if you want faster recovery.', 'filter-guard-for-woocommerce'),
+            'enable_rate_limit' => __('Enables PHP-level rate limits. Useful for moderate abuse, but not a replacement for server/CDN protection during high-volume floods because WordPress must still load.', 'filter-guard-for-woocommerce'),
+            'rate_limit_ip_threshold' => __('Maximum matching requests from one IP within the rate-limit window before temporary blocking starts.', 'filter-guard-for-woocommerce'),
+            'range_threshold' => __('Maximum matching requests from the same approximate network range within the window. Helps slow small bot clusters that rotate nearby IPs.', 'filter-guard-for-woocommerce'),
+            'window_seconds' => __('Length of the rate-limit counting window in seconds. Shorter windows are more responsive; longer windows are more tolerant but less immediate.', 'filter-guard-for-woocommerce'),
+            'block_seconds' => __('Temporary block duration after a rate limit is exceeded. Keep it long enough to cool down abuse but not so long that accidental blocks persist for hours.', 'filter-guard-for-woocommerce'),
+            'bot_verification' => __('Select which search bot families to verify and whether failed verification should be blocked. Verification is important because bot user-agent names can be forged.', 'filter-guard-for-woocommerce'),
+            'verified_bot_cache_ttl' => __('How long successful bot verification is cached. Higher values reduce DNS/verification overhead; lower values refresh identity checks more often.', 'filter-guard-for-woocommerce'),
+            'verified_bot_max_score' => __('Maximum complexity score allowed for verified bots before normal protection applies. Use this to keep legitimate crawlers from exploring extremely expensive filter combinations.', 'filter-guard-for-woocommerce'),
+            'health_check_after_changes' => __('Runs self-tests after writing managed files. If rollback is enabled and tests fail, the plugin restores the latest backup to avoid leaving broken blocking rules active.', 'filter-guard-for-woocommerce'),
+            'health_check_test_path' => __('Clean WooCommerce shop or category path used for tests before filter parameters are added. It must return 200 so the plugin can distinguish real rule problems from missing pages.', 'filter-guard-for-woocommerce'),
+            'remove_file_rules_on_uninstall' => __('Controls cleanup on plugin deletion. Enable when you want .htaccess, robots.txt, and blocked-light.html changes removed automatically during uninstall.', 'filter-guard-for-woocommerce'),
+        ];
+    }
+
+    private function tooltip_text(string $key): string
+    {
+        $texts = $this->tooltip_texts();
+        return isset($texts[$key]) ? (string) $texts[$key] : '';
+    }
+
+    private function render_help_tip(string $key, string $context = ''): void
+    {
+        static $counter = 0;
+        $text = $this->tooltip_text($key);
+        if ($text === '') {
+            return;
+        }
+
+        $counter++;
+        $id = 'filter-guard-for-woocommerce-tooltip-' . sanitize_html_class($key) . '-' . $counter;
+        /* translators: %s: setting or section label. */
+        $label = $context !== '' ? sprintf(__('Help: %s', 'filter-guard-for-woocommerce'), $context) : __('More information', 'filter-guard-for-woocommerce');
+
+        echo '<span class="filter-guard-for-woocommerce-help">';
+        echo '<button type="button" class="filter-guard-for-woocommerce-help-button" aria-label="' . esc_attr($label) . '" aria-describedby="' . esc_attr($id) . '">';
+        echo '<span class="dashicons dashicons-editor-help" aria-hidden="true"></span>';
+        echo '</button>';
+        echo '<span id="' . esc_attr($id) . '" class="filter-guard-for-woocommerce-tooltip" role="tooltip">' . esc_html($text) . '</span>';
+        echo '</span>';
+    }
+
+    private function render_section_heading(string $title, string $tooltip_key): void
+    {
+        echo '<h2 class="filter-guard-for-woocommerce-section-heading"><span>' . esc_html($title) . '</span>';
+        $this->render_help_tip($tooltip_key, $title);
+        echo '</h2>';
+    }
+
+    private function render_setting_label(string $label, string $tooltip_key): void
+    {
+        echo '<span class="filter-guard-for-woocommerce-setting-label"><span>' . esc_html($label) . '</span>';
+        $this->render_help_tip($tooltip_key, $label);
+        echo '</span>';
+    }
+
+    private function render_setting_th(string $label, string $tooltip_key): void
+    {
+        echo '<th scope="row">';
+        $this->render_setting_label($label, $tooltip_key);
+        echo '</th>';
+    }
+
+    private function render_mode_guidance(array $opts): void
+    {
+        $mode = (string) ($opts['protection_mode'] ?? 'monitor');
+        if ($mode === 'cookie_referer') {
+            ?>
+            <div class="notice notice-warning inline filter-guard-for-woocommerce-mode-notice">
+                <p><strong><?php esc_html_e('Cookie + Referer mode is very strict.', 'filter-guard-for-woocommerce'); ?></strong> <?php esc_html_e('Direct visits from Google, external links, messaging apps, or browsers that omit the Referer header may receive 403 on protected filtered URLs until a valid Filter Guard cookie and internal referer exist. Use this mode mainly during active crawl floods; Cookie or SEO Soft is usually safer for normal operation.', 'filter-guard-for-woocommerce'); ?></p>
+            </div>
+            <?php
+            return;
+        }
+        if (in_array($mode, ['strict', 'emergency'], true)) {
+            ?>
+            <div class="notice notice-error inline filter-guard-for-woocommerce-mode-notice">
+                <p><strong><?php esc_html_e('High-impact blocking mode is active.', 'filter-guard-for-woocommerce'); ?></strong> <?php esc_html_e('Review Health Check results and generated server/CDN rules before leaving this mode enabled for long periods.', 'filter-guard-for-woocommerce'); ?></p>
+            </div>
+            <?php
+        }
+    }
+
+
+    private function render_htaccess_diagnostics(array $opts): void
+    {
+        $diag = $this->htaccess_diagnostics();
+        $last = get_option(self::HTACCESS_DIAG_OPTION, []);
+        if (!is_array($last)) {
+            $last = [];
+        }
+        ?>
+        <?php $this->render_section_heading(__('.htaccess Diagnostics', 'filter-guard-for-woocommerce'), 'section_htaccess_diagnostics'); ?>
+        <table class="widefat striped filter-guard-for-woocommerce-table">
+            <tbody>
+            <tr><th><?php esc_html_e('Path', 'filter-guard-for-woocommerce'); ?></th><td><code><?php echo esc_html($diag['path']); ?></code></td></tr>
+            <tr><th><?php esc_html_e('Exists', 'filter-guard-for-woocommerce'); ?></th><td><?php if (!empty($diag['exists'])): ?><strong class="filter-guard-for-woocommerce-ok"><?php esc_html_e('Yes', 'filter-guard-for-woocommerce'); ?></strong><?php else: ?><strong class="filter-guard-for-woocommerce-bad"><?php esc_html_e('No', 'filter-guard-for-woocommerce'); ?></strong><?php endif; ?></td></tr>
+            <tr><th><?php esc_html_e('Readable / writable', 'filter-guard-for-woocommerce'); ?></th><td><?php echo esc_html((!empty($diag['readable']) ? __('readable', 'filter-guard-for-woocommerce') : __('not readable', 'filter-guard-for-woocommerce')) . ' / ' . (!empty($diag['writable']) ? __('writable', 'filter-guard-for-woocommerce') : __('not writable', 'filter-guard-for-woocommerce'))); ?></td></tr>
+            <tr><th><?php esc_html_e('Managed block', 'filter-guard-for-woocommerce'); ?></th><td><?php if (!empty($diag['has_managed_block'])): ?><strong class="filter-guard-for-woocommerce-ok"><?php esc_html_e('Present', 'filter-guard-for-woocommerce'); ?></strong><?php else: ?><?php esc_html_e('Not present', 'filter-guard-for-woocommerce'); ?><?php endif; ?></td></tr>
+            <tr><th><?php esc_html_e('Current SHA-256', 'filter-guard-for-woocommerce'); ?></th><td><code><?php echo esc_html($diag['sha256']); ?></code></td></tr>
+            <tr><th><?php esc_html_e('Filesystem method', 'filter-guard-for-woocommerce'); ?></th><td><code><?php echo esc_html($diag['filesystem_method']); ?></code></td></tr>
+            <?php if (!empty($last)): ?>
+                <tr><th><?php esc_html_e('Last write result', 'filter-guard-for-woocommerce'); ?></th><td><?php echo esc_html((string) ($last['operation'] ?? '')); ?> — <?php if (!empty($last['success'])): ?><strong class="filter-guard-for-woocommerce-ok"><?php esc_html_e('Success', 'filter-guard-for-woocommerce'); ?></strong><?php else: ?><strong class="filter-guard-for-woocommerce-bad"><?php esc_html_e('Failed', 'filter-guard-for-woocommerce'); ?></strong><?php endif; ?> <?php if (!empty($last['error'])): ?><br><code><?php echo esc_html((string) $last['error']); ?></code><?php endif; ?></td></tr>
+                <tr><th><?php esc_html_e('Last hash before / after', 'filter-guard-for-woocommerce'); ?></th><td><code><?php echo esc_html((string) ($last['hash_before'] ?? '')); ?></code><br><code><?php echo esc_html((string) ($last['hash_after'] ?? '')); ?></code></td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+        <p class="description"><?php esc_html_e('Cookie modes are PHP-level modes; filtered URL pre-PHP blocking is generated only for Strict/Emergency. XML-RPC .htaccess blocking is independent when enabled.', 'filter-guard-for-woocommerce'); ?></p>
+        <?php
+    }
+
     private function render_last_self_test($tests): void
     {
         if (!is_array($tests) || !$tests) {
             return;
         }
         ?>
-        <h2><?php esc_html_e('Last Health Check / Self-Test', 'filter-guard-for-woocommerce'); ?></h2>
+        <?php $this->render_section_heading(__('Last Health Check / Self-Test', 'filter-guard-for-woocommerce'), 'section_last_self_test'); ?>
         <p><?php esc_html_e('Run at:', 'filter-guard-for-woocommerce'); ?> <code><?php echo esc_html($tests['time'] ?? ''); ?></code> <?php if (!empty($tests['mode'])): ?><?php esc_html_e('Mode:', 'filter-guard-for-woocommerce'); ?> <code><?php echo esc_html((string) $tests['mode']); ?></code><?php endif; ?></p>
         <table class="widefat striped filter-guard-for-woocommerce-table">
             <thead><tr><th><?php esc_html_e('Test', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('URL', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Status', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('X-Robots-Tag', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Result', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Note', 'filter-guard-for-woocommerce'); ?></th></tr></thead>
             <tbody>
             <?php foreach (($tests['items'] ?? []) as $item): ?>
-                <tr><td><?php echo esc_html($item['label'] ?? ''); ?></td><td><code><?php echo esc_html($item['url'] ?? ''); ?></code></td><td><?php echo esc_html((string) ($item['status'] ?? '')); ?></td><td><?php echo esc_html((string) ($item['x_robots'] ?? '')); ?></td><td><?php echo !empty($item['ok']) ? '<strong class="filter-guard-for-woocommerce-ok">' . esc_html__('PASS', 'filter-guard-for-woocommerce') . '</strong>' : '<strong class="filter-guard-for-woocommerce-bad">' . esc_html__('CHECK', 'filter-guard-for-woocommerce') . '</strong>'; ?></td><td><?php echo esc_html((string) ($item['note'] ?? '')); ?></td></tr>
+                <tr><td><?php echo esc_html($item['label'] ?? ''); ?></td><td><code><?php echo esc_html($item['url'] ?? ''); ?></code></td><td><?php echo esc_html((string) ($item['status'] ?? '')); ?></td><td><?php echo esc_html((string) ($item['x_robots'] ?? '')); ?></td><td><?php if (!empty($item['ok'])): ?><strong class="filter-guard-for-woocommerce-ok"><?php esc_html_e('PASS', 'filter-guard-for-woocommerce'); ?></strong><?php else: ?><strong class="filter-guard-for-woocommerce-bad"><?php esc_html_e('CHECK', 'filter-guard-for-woocommerce'); ?></strong><?php endif; ?></td><td><?php echo esc_html((string) ($item['note'] ?? '')); ?></td></tr>
             <?php endforeach; ?>
             </tbody>
         </table>
@@ -1026,7 +1340,8 @@ final class Filter_Guard_For_Woocommerce_Plugin
     private function render_recent_events(array $events): void
     {
         ?>
-        <h2><?php esc_html_e('Recent Events', 'filter-guard-for-woocommerce'); ?></h2>
+        <?php $this->render_section_heading(__('Recent Events', 'filter-guard-for-woocommerce'), 'section_recent_events'); ?>
+        <p class="description filter-guard-for-woocommerce-dashboard-scope"><?php esc_html_e('Recent Events shows only requests that reached WordPress/PHP. Requests blocked by generated .htaccess rules before PHP are visible in server access logs, not in this table.', 'filter-guard-for-woocommerce'); ?></p>
         <table class="widefat striped filter-guard-for-woocommerce-table">
             <thead><tr><th><?php esc_html_e('Time', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Event', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Action', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Status', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Score', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('URI', 'filter-guard-for-woocommerce'); ?></th></tr></thead>
             <tbody>
@@ -1043,87 +1358,94 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function render_settings_form(array $opts): void
     {
+        $effective_health_check_test_path = $this->sanitize_health_check_test_path((string) ($opts['health_check_test_path'] ?? ''));
+        if ($effective_health_check_test_path === '') {
+            $effective_health_check_test_path = $this->auto_detect_health_check_test_path();
+        }
         ?>
         <form method="post" class="filter-guard-for-woocommerce-settings-form">
             <?php wp_nonce_field('woo_filter_guard_save_settings'); ?>
             <input type="hidden" name="woo_filter_guard_action" value="save">
 
-            <h2><?php esc_html_e('Protection Settings', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Protection Settings', 'filter-guard-for-woocommerce'), 'section_protection'); ?>
             <table class="form-table" role="presentation">
-                <tr><th scope="row"><?php esc_html_e('Protection mode', 'filter-guard-for-woocommerce'); ?></th><td><select name="protection_mode"><?php foreach ($this->modes() as $key => $label): ?><option value="<?php echo esc_attr($key); ?>" <?php selected($opts['protection_mode'], $key); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select><p class="description"><?php esc_html_e('Default is Monitor Only; it logs and scores only and does not modify SEO tags, cookies, robots, rate limits, XML-RPC, or server blocking.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Base recovery mode', 'filter-guard-for-woocommerce'); ?></th><td><select name="base_recovery_mode"><?php foreach ($this->modes() as $key => $label): if (in_array($key, ['off','emergency'], true)) { continue; } ?><option value="<?php echo esc_attr($key); ?>" <?php selected($opts['base_recovery_mode'], $key); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select><p class="description"><?php esc_html_e('Auto Emergency returns to this mode after the recovery period.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Manage .htaccess guard', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="manage_htaccess" value="1" <?php checked($opts['manage_htaccess']); ?>> <?php esc_html_e('Write Apache/LiteSpeed rewrite rules to block expensive filtered URLs before PHP.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Block XML-RPC', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="block_xmlrpc" value="1" <?php checked($opts['block_xmlrpc']); ?>> <?php esc_html_e('Block xmlrpc.php at PHP and .htaccess levels when enabled.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Block response', 'filter-guard-for-woocommerce'); ?></th><td><select name="block_response"><option value="403" <?php selected($opts['block_response'], '403'); ?>><?php esc_html_e('403 Forbidden', 'filter-guard-for-woocommerce'); ?></option><option value="404" <?php selected($opts['block_response'], '404'); ?>><?php esc_html_e('404 Not Found', 'filter-guard-for-woocommerce'); ?></option></select></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Protected path regex', 'filter-guard-for-woocommerce'); ?></th><td><input type="text" name="protected_paths_regex" value="<?php echo esc_attr($opts['protected_paths_regex']); ?>" class="large-text code"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Query key regex', 'filter-guard-for-woocommerce'); ?></th><td><input type="text" name="query_keys_regex" value="<?php echo esc_attr($opts['query_keys_regex']); ?>" class="large-text code"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Legacy compatible cookie regex', 'filter-guard-for-woocommerce'); ?></th><td><input type="text" name="allowed_cookie_regex" value="<?php echo esc_attr($opts['allowed_cookie_regex']); ?>" class="large-text code"><p class="description"><?php esc_html_e('Optional legacy compatibility only. Generated server rules use only Filter Guard signed cookie names; HMAC validation always happens in PHP.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Allowlisted IPs', 'filter-guard-for-woocommerce'); ?></th><td><textarea name="allow_ips" rows="4" class="large-text code" placeholder="93.117.22.77&#10;185.235.245.0/24&#10;192.0.2.*"><?php echo esc_textarea($opts['allow_ips']); ?></textarea></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Allow User-Agent regex', 'filter-guard-for-woocommerce'); ?></th><td><input type="text" name="allow_user_agent_regex" value="<?php echo esc_attr($opts['allow_user_agent_regex']); ?>" class="large-text code"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Allow roles', 'filter-guard-for-woocommerce'); ?></th><td><input type="text" name="allow_roles" value="<?php echo esc_attr($opts['allow_roles']); ?>" class="regular-text"><p class="description"><?php esc_html_e('Comma-separated role slugs for PHP-level guard only.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
+                <tr><?php $this->render_setting_th(__('Protection mode', 'filter-guard-for-woocommerce'), 'protection_mode'); ?><td><select name="protection_mode"><?php foreach ($this->modes() as $key => $label): ?><option value="<?php echo esc_attr($key); ?>" <?php selected($opts['protection_mode'], $key); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select><p class="description"><?php esc_html_e('Default is Monitor Only; it logs and scores only and does not modify SEO tags, cookies, robots, rate limits, XML-RPC, or server blocking.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
+                <tr><?php $this->render_setting_th(__('Base recovery mode', 'filter-guard-for-woocommerce'), 'base_recovery_mode'); ?><td><select name="base_recovery_mode"><?php foreach ($this->modes() as $key => $label): if (in_array($key, ['off','emergency'], true)) { continue; } ?><option value="<?php echo esc_attr($key); ?>" <?php selected($opts['base_recovery_mode'], $key); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select><p class="description"><?php esc_html_e('Auto Emergency returns to this mode after the recovery period.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
+                <tr><?php $this->render_setting_th(__('Manage .htaccess guard', 'filter-guard-for-woocommerce'), 'manage_htaccess'); ?><td><label><input type="checkbox" name="manage_htaccess" value="1" <?php checked($opts['manage_htaccess']); ?>> <?php esc_html_e('Write Apache/LiteSpeed rewrite rules for server-level protection when the selected mode supports safe pre-PHP blocking.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Block XML-RPC', 'filter-guard-for-woocommerce'), 'block_xmlrpc'); ?><td><label><input type="checkbox" name="block_xmlrpc" value="1" <?php checked($opts['block_xmlrpc']); ?>> <?php esc_html_e('Block xmlrpc.php at PHP and .htaccess levels when enabled.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Block response', 'filter-guard-for-woocommerce'), 'block_response'); ?><td><select name="block_response"><option value="403" <?php selected($opts['block_response'], '403'); ?>><?php esc_html_e('403 Forbidden', 'filter-guard-for-woocommerce'); ?></option><option value="404" <?php selected($opts['block_response'], '404'); ?>><?php esc_html_e('404 Not Found', 'filter-guard-for-woocommerce'); ?></option></select></td></tr>
+                <tr><?php $this->render_setting_th(__('Protected path regex', 'filter-guard-for-woocommerce'), 'protected_paths_regex'); ?><td><input type="text" name="protected_paths_regex" value="<?php echo esc_attr($opts['protected_paths_regex']); ?>" class="large-text code"></td></tr>
+                <tr><?php $this->render_setting_th(__('Query key regex', 'filter-guard-for-woocommerce'), 'query_keys_regex'); ?><td><input type="text" name="query_keys_regex" value="<?php echo esc_attr($opts['query_keys_regex']); ?>" class="large-text code"></td></tr>
+                <tr><?php $this->render_setting_th(__('Compatible cookie-name regex', 'filter-guard-for-woocommerce'), 'allowed_cookie_regex'); ?><td><input type="text" name="allowed_cookie_regex" value="<?php echo esc_attr($opts['allowed_cookie_regex']); ?>" class="large-text code"><p class="description"><?php esc_html_e('Optional PHP-only compatibility for additional Filter Guard cookie names. The cookie value must still pass signed HMAC validation.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
+                <tr><?php $this->render_setting_th(__('Allowlisted IPs', 'filter-guard-for-woocommerce'), 'allow_ips'); ?><td><textarea name="allow_ips" rows="4" class="large-text code" placeholder="93.117.22.77&#10;185.235.245.0/24&#10;192.0.2.*"><?php echo esc_textarea($opts['allow_ips']); ?></textarea></td></tr>
+                <tr><?php $this->render_setting_th(__('Allow User-Agent regex', 'filter-guard-for-woocommerce'), 'allow_user_agent_regex'); ?><td><input type="text" name="allow_user_agent_regex" value="<?php echo esc_attr($opts['allow_user_agent_regex']); ?>" class="large-text code"></td></tr>
+                <tr><?php $this->render_setting_th(__('Allow roles', 'filter-guard-for-woocommerce'), 'allow_roles'); ?><td><input type="text" name="allow_roles" value="<?php echo esc_attr($opts['allow_roles']); ?>" class="regular-text"><p class="description"><?php esc_html_e('Comma-separated role slugs for PHP-level guard only.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
+                <tr><?php $this->render_setting_th(__('Trusted proxy / real IP', 'filter-guard-for-woocommerce'), 'trusted_proxy'); ?><td><select name="trusted_proxy_mode"><option value="off" <?php selected($opts['trusted_proxy_mode'], 'off'); ?>><?php esc_html_e('Off - use REMOTE_ADDR only', 'filter-guard-for-woocommerce'); ?></option><option value="cloudflare" <?php selected($opts['trusted_proxy_mode'], 'cloudflare'); ?>><?php esc_html_e('Cloudflare - trust CF-Connecting-IP from Cloudflare IP ranges', 'filter-guard-for-woocommerce'); ?></option><option value="custom" <?php selected($opts['trusted_proxy_mode'], 'custom'); ?>><?php esc_html_e('Custom trusted proxy CIDRs', 'filter-guard-for-woocommerce'); ?></option></select><p class="description"><?php esc_html_e('Use this only when REMOTE_ADDR is a trusted proxy. This affects rate limiting, IP allowlists, IP logging, bot verification, and optional IP-prefix cookie binding.', 'filter-guard-for-woocommerce'); ?></p><textarea name="trusted_proxy_cidrs" rows="4" class="large-text code" placeholder="203.0.113.0/24&#10;2001:db8::/32"><?php echo esc_textarea($opts['trusted_proxy_cidrs']); ?></textarea></td></tr>
             </table>
 
-            <h2><?php esc_html_e('Query Complexity Scoring', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Query Complexity Scoring', 'filter-guard-for-woocommerce'), 'section_complexity'); ?>
             <table class="form-table" role="presentation">
-                <tr><th scope="row"><?php esc_html_e('Max filter/query params', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="max_filter_params" value="<?php echo esc_attr((string) $opts['max_filter_params']); ?>" min="0" max="50"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Max query length', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="max_query_length" value="<?php echo esc_attr((string) $opts['max_query_length']); ?>" min="0" max="8000"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Require cookie at score', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="complexity_cookie_score" value="<?php echo esc_attr((string) $opts['complexity_cookie_score']); ?>" min="0" max="50"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Block at score', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="complexity_block_score" value="<?php echo esc_attr((string) $opts['complexity_block_score']); ?>" min="0" max="80"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Emergency score', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="complexity_emergency_score" value="<?php echo esc_attr((string) $opts['complexity_emergency_score']); ?>" min="0" max="100"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('SEO Soft max score', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="seo_soft_max_score" value="<?php echo esc_attr((string) $opts['seo_soft_max_score']); ?>" min="0" max="80"> <select name="seo_soft_high_score_action"><option value="redirect_clean" <?php selected($opts['seo_soft_high_score_action'], 'redirect_clean'); ?>><?php esc_html_e('Redirect high-score filters to clean URL', 'filter-guard-for-woocommerce'); ?></option><option value="block" <?php selected($opts['seo_soft_high_score_action'], 'block'); ?>><?php esc_html_e('Block high-score filters', 'filter-guard-for-woocommerce'); ?></option></select></td></tr>
+                <tr><?php $this->render_setting_th(__('Max filter/query params', 'filter-guard-for-woocommerce'), 'max_filter_params'); ?><td><input type="number" name="max_filter_params" value="<?php echo esc_attr((string) $opts['max_filter_params']); ?>" min="0" max="50"></td></tr>
+                <tr><?php $this->render_setting_th(__('Max query length', 'filter-guard-for-woocommerce'), 'max_query_length'); ?><td><input type="number" name="max_query_length" value="<?php echo esc_attr((string) $opts['max_query_length']); ?>" min="0" max="8000"></td></tr>
+                <tr><?php $this->render_setting_th(__('Require cookie at score', 'filter-guard-for-woocommerce'), 'complexity_cookie_score'); ?><td><input type="number" name="complexity_cookie_score" value="<?php echo esc_attr((string) $opts['complexity_cookie_score']); ?>" min="0" max="50"></td></tr>
+                <tr><?php $this->render_setting_th(__('Block at score', 'filter-guard-for-woocommerce'), 'complexity_block_score'); ?><td><input type="number" name="complexity_block_score" value="<?php echo esc_attr((string) $opts['complexity_block_score']); ?>" min="0" max="80"></td></tr>
+                <tr><?php $this->render_setting_th(__('Emergency score', 'filter-guard-for-woocommerce'), 'complexity_emergency_score'); ?><td><input type="number" name="complexity_emergency_score" value="<?php echo esc_attr((string) $opts['complexity_emergency_score']); ?>" min="0" max="100"></td></tr>
+                <tr><?php $this->render_setting_th(__('SEO Soft max score', 'filter-guard-for-woocommerce'), 'seo_soft_max_score'); ?><td><input type="number" name="seo_soft_max_score" value="<?php echo esc_attr((string) $opts['seo_soft_max_score']); ?>" min="0" max="80"> <select name="seo_soft_high_score_action"><option value="redirect_clean" <?php selected($opts['seo_soft_high_score_action'], 'redirect_clean'); ?>><?php esc_html_e('Redirect high-score filters to clean URL', 'filter-guard-for-woocommerce'); ?></option><option value="block" <?php selected($opts['seo_soft_high_score_action'], 'block'); ?>><?php esc_html_e('Block high-score filters', 'filter-guard-for-woocommerce'); ?></option></select></td></tr>
             </table>
 
-            <h2><?php esc_html_e('Signed / Rotating Human Cookie', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Signed / Rotating Human Cookie', 'filter-guard-for-woocommerce'), 'section_cookie'); ?>
             <table class="form-table" role="presentation">
-                <tr><th scope="row"><?php esc_html_e('Set human cookie', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="set_cookie" value="1" <?php checked($opts['set_cookie']); ?>> <?php esc_html_e('Set a lightweight first-party HttpOnly cookie.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Cookie base name', 'filter-guard-for-woocommerce'); ?></th><td><input type="text" name="cookie_name" value="<?php echo esc_attr($opts['cookie_name']); ?>" class="regular-text"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Cookie TTL seconds', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="cookie_ttl" value="<?php echo esc_attr((string) $opts['cookie_ttl']); ?>" min="300" max="86400"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Cookie hardening', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="signed_cookie" value="1" <?php checked($opts['signed_cookie']); ?>> <?php esc_html_e('HMAC-sign cookie value', 'filter-guard-for-woocommerce'); ?></label><br><label><input type="checkbox" name="rotate_cookie_name" value="1" <?php checked($opts['rotate_cookie_name']); ?>> <?php esc_html_e('Rotate cookie name daily', 'filter-guard-for-woocommerce'); ?></label><br><label><input type="checkbox" name="bind_cookie_ua" value="1" <?php checked($opts['bind_cookie_ua']); ?>> <?php esc_html_e('Bind signature to User-Agent', 'filter-guard-for-woocommerce'); ?></label><br><label><input type="checkbox" name="bind_cookie_ip_prefix" value="1" <?php checked($opts['bind_cookie_ip_prefix']); ?>> <?php esc_html_e('Bind signature to IP prefix', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Set human cookie', 'filter-guard-for-woocommerce'), 'set_cookie'); ?><td><label><input type="checkbox" name="set_cookie" value="1" <?php checked($opts['set_cookie']); ?>> <?php esc_html_e('Set a lightweight first-party HttpOnly cookie.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Cookie base name', 'filter-guard-for-woocommerce'), 'cookie_name'); ?><td><input type="text" name="cookie_name" value="<?php echo esc_attr($opts['cookie_name']); ?>" class="regular-text"></td></tr>
+                <tr><?php $this->render_setting_th(__('Cookie TTL seconds', 'filter-guard-for-woocommerce'), 'cookie_ttl'); ?><td><input type="number" name="cookie_ttl" value="<?php echo esc_attr((string) $opts['cookie_ttl']); ?>" min="300" max="86400"></td></tr>
+                <tr><?php $this->render_setting_th(__('Cookie hardening', 'filter-guard-for-woocommerce'), 'cookie_hardening'); ?><td><label><input type="checkbox" name="signed_cookie" value="1" <?php checked($opts['signed_cookie']); ?>> <?php esc_html_e('HMAC-sign cookie value', 'filter-guard-for-woocommerce'); ?></label><br><label><input type="checkbox" name="rotate_cookie_name" value="1" <?php checked($opts['rotate_cookie_name']); ?>> <?php esc_html_e('Rotate cookie name daily', 'filter-guard-for-woocommerce'); ?></label><br><label><input type="checkbox" name="bind_cookie_ua" value="1" <?php checked($opts['bind_cookie_ua']); ?>> <?php esc_html_e('Bind signature to User-Agent', 'filter-guard-for-woocommerce'); ?></label><br><label><input type="checkbox" name="bind_cookie_ip_prefix" value="1" <?php checked($opts['bind_cookie_ip_prefix']); ?>> <?php esc_html_e('Bind signature to IP prefix', 'filter-guard-for-woocommerce'); ?></label></td></tr>
             </table>
 
-            <h2><?php esc_html_e('Event Log / Privacy', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Event Log / Privacy', 'filter-guard-for-woocommerce'), 'section_event_log'); ?>
             <table class="form-table" role="presentation">
-                <tr><th scope="row"><?php esc_html_e('Enable event log', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="event_log_enabled" value="1" <?php checked($opts['event_log_enabled']); ?>> <?php esc_html_e('Record blocked/allowed/noindex/mode/test events.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Storage', 'filter-guard-for-woocommerce'); ?></th><td><select name="event_log_storage"><option value="database" <?php selected($opts['event_log_storage'], 'database'); ?>>Database</option><option value="ndjson" <?php selected($opts['event_log_storage'], 'ndjson'); ?>>NDJSON file</option><option value="both" <?php selected($opts['event_log_storage'], 'both'); ?>>Both</option></select></td></tr>
-                <tr><th scope="row"><?php esc_html_e('IP logging mode', 'filter-guard-for-woocommerce'); ?></th><td><select name="ip_logging_mode"><option value="hash" <?php selected($opts['ip_logging_mode'], 'hash'); ?>>Hash only</option><option value="anonymized" <?php selected($opts['ip_logging_mode'], 'anonymized'); ?>>Anonymized</option><option value="full" <?php selected($opts['ip_logging_mode'], 'full'); ?>>Full IP</option></select></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Retention days', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="event_log_retention_days" value="<?php echo esc_attr((string) $opts['event_log_retention_days']); ?>" min="1" max="90"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('High-traffic log throttling', 'filter-guard-for-woocommerce'); ?></th><td><label><?php esc_html_e('Start sampling after', 'filter-guard-for-woocommerce'); ?> <input type="number" name="event_log_sample_after_per_minute" value="<?php echo esc_attr((string) $opts['event_log_sample_after_per_minute']); ?>" min="0" max="100000"> <?php esc_html_e('events per minute; keep one event out of', 'filter-guard-for-woocommerce'); ?> <input type="number" name="event_log_sample_rate" value="<?php echo esc_attr((string) $opts['event_log_sample_rate']); ?>" min="1" max="1000"></label><p class="description"><?php esc_html_e('Set threshold to 0 to disable sampling. Sampling protects the database during crawl floods while runtime attack counters still drive Auto Emergency.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Emergency log pressure guard', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="event_log_disable_per_request_in_emergency" value="1" <?php checked($opts['event_log_disable_per_request_in_emergency']); ?>> <?php esc_html_e('Skip repetitive per-request block/allow/noindex logs while Emergency mode is active.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Enable event log', 'filter-guard-for-woocommerce'), 'enable_event_log'); ?><td><label><input type="checkbox" name="event_log_enabled" value="1" <?php checked($opts['event_log_enabled']); ?>> <?php esc_html_e('Record blocked/allowed/noindex/mode/test events.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Storage', 'filter-guard-for-woocommerce'), 'event_log_storage'); ?><td><select name="event_log_storage"><option value="database" <?php selected($opts['event_log_storage'], 'database'); ?>>Database</option><option value="ndjson" <?php selected($opts['event_log_storage'], 'ndjson'); ?>>NDJSON file</option><option value="both" <?php selected($opts['event_log_storage'], 'both'); ?>>Both</option></select></td></tr>
+                <tr><?php $this->render_setting_th(__('IP logging mode', 'filter-guard-for-woocommerce'), 'ip_logging_mode'); ?><td><select name="ip_logging_mode"><option value="hash" <?php selected($opts['ip_logging_mode'], 'hash'); ?>>Hash only</option><option value="anonymized" <?php selected($opts['ip_logging_mode'], 'anonymized'); ?>>Anonymized</option><option value="full" <?php selected($opts['ip_logging_mode'], 'full'); ?>>Full IP</option></select></td></tr>
+                <tr><?php $this->render_setting_th(__('Retention days', 'filter-guard-for-woocommerce'), 'retention_days'); ?><td><input type="number" name="event_log_retention_days" value="<?php echo esc_attr((string) $opts['event_log_retention_days']); ?>" min="1" max="90"></td></tr>
+                <tr><?php $this->render_setting_th(__('High-traffic log throttling', 'filter-guard-for-woocommerce'), 'log_throttling'); ?><td><label><?php esc_html_e('Start sampling after', 'filter-guard-for-woocommerce'); ?> <input type="number" name="event_log_sample_after_per_minute" value="<?php echo esc_attr((string) $opts['event_log_sample_after_per_minute']); ?>" min="0" max="100000"> <?php esc_html_e('events per minute; keep one event out of', 'filter-guard-for-woocommerce'); ?> <input type="number" name="event_log_sample_rate" value="<?php echo esc_attr((string) $opts['event_log_sample_rate']); ?>" min="1" max="1000"></label><p class="description"><?php esc_html_e('Set threshold to 0 to disable sampling. Sampling protects the database during crawl floods while runtime attack counters still drive Auto Emergency.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
+                <tr><?php $this->render_setting_th(__('Emergency log pressure guard', 'filter-guard-for-woocommerce'), 'emergency_log_pressure'); ?><td><label><input type="checkbox" name="event_log_disable_per_request_in_emergency" value="1" <?php checked($opts['event_log_disable_per_request_in_emergency']); ?>> <?php esc_html_e('Skip repetitive per-request block/allow/noindex logs while Emergency mode is active.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
             </table>
 
-            <h2><?php esc_html_e('Auto Emergency Mode', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Auto Emergency Mode', 'filter-guard-for-woocommerce'), 'section_auto_emergency'); ?>
             <table class="form-table" role="presentation">
-                <tr><th scope="row"><?php esc_html_e('Enable Auto Emergency', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="auto_emergency_enabled" value="1" <?php checked($opts['auto_emergency_enabled']); ?>> <?php esc_html_e('Automatically switch to strict/emergency when filtered-request or blocked-request thresholds are exceeded.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Window minutes', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="auto_window_minutes" value="<?php echo esc_attr((string) $opts['auto_window_minutes']); ?>" min="1" max="60"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Strict threshold', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="auto_strict_threshold" value="<?php echo esc_attr((string) $opts['auto_strict_threshold']); ?>" min="1"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Emergency threshold', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="auto_emergency_threshold" value="<?php echo esc_attr((string) $opts['auto_emergency_threshold']); ?>" min="1"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Distinct IP threshold', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="auto_distinct_ip_threshold" value="<?php echo esc_attr((string) $opts['auto_distinct_ip_threshold']); ?>" min="1"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Recovery minutes', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="auto_recovery_minutes" value="<?php echo esc_attr((string) $opts['auto_recovery_minutes']); ?>" min="1"></td></tr>
+                <tr><?php $this->render_setting_th(__('Enable Auto Emergency', 'filter-guard-for-woocommerce'), 'enable_auto_emergency'); ?><td><label><input type="checkbox" name="auto_emergency_enabled" value="1" <?php checked($opts['auto_emergency_enabled']); ?>> <?php esc_html_e('Automatically switch to strict/emergency when filtered-request or blocked-request thresholds are exceeded.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Window minutes', 'filter-guard-for-woocommerce'), 'auto_window_minutes'); ?><td><input type="number" name="auto_window_minutes" value="<?php echo esc_attr((string) $opts['auto_window_minutes']); ?>" min="1" max="60"></td></tr>
+                <tr><?php $this->render_setting_th(__('Strict threshold', 'filter-guard-for-woocommerce'), 'strict_threshold'); ?><td><input type="number" name="auto_strict_threshold" value="<?php echo esc_attr((string) $opts['auto_strict_threshold']); ?>" min="1"></td></tr>
+                <tr><?php $this->render_setting_th(__('Emergency threshold', 'filter-guard-for-woocommerce'), 'emergency_threshold'); ?><td><input type="number" name="auto_emergency_threshold" value="<?php echo esc_attr((string) $opts['auto_emergency_threshold']); ?>" min="1"></td></tr>
+                <tr><?php $this->render_setting_th(__('Distinct IP threshold', 'filter-guard-for-woocommerce'), 'distinct_ip_threshold'); ?><td><input type="number" name="auto_distinct_ip_threshold" value="<?php echo esc_attr((string) $opts['auto_distinct_ip_threshold']); ?>" min="1"></td></tr>
+                <tr><?php $this->render_setting_th(__('Recovery minutes', 'filter-guard-for-woocommerce'), 'recovery_minutes'); ?><td><input type="number" name="auto_recovery_minutes" value="<?php echo esc_attr((string) $opts['auto_recovery_minutes']); ?>" min="1"></td></tr>
             </table>
 
-            <h2><?php esc_html_e('Rate Limit', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Rate Limit', 'filter-guard-for-woocommerce'), 'section_rate_limit'); ?>
             <table class="form-table" role="presentation">
-                <tr><th scope="row"><?php esc_html_e('Enable rate limit', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="rate_limit_enabled" value="1" <?php checked($opts['rate_limit_enabled']); ?>> <?php esc_html_e('Use best-effort short-lived WordPress transients/object-cache counters. Disabled by default so Monitor mode never blocks unexpectedly; use server/CDN rate limits for high-volume attacks.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
-                <tr><th scope="row"><?php esc_html_e('IP threshold', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="rate_limit_ip_threshold" value="<?php echo esc_attr((string) $opts['rate_limit_ip_threshold']); ?>" min="1"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Range threshold', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="rate_limit_range_threshold" value="<?php echo esc_attr((string) $opts['rate_limit_range_threshold']); ?>" min="1"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Window seconds', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="rate_limit_window_seconds" value="<?php echo esc_attr((string) $opts['rate_limit_window_seconds']); ?>" min="10"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Block seconds', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="rate_limit_block_seconds" value="<?php echo esc_attr((string) $opts['rate_limit_block_seconds']); ?>" min="60"></td></tr>
+                <tr><?php $this->render_setting_th(__('Enable rate limit', 'filter-guard-for-woocommerce'), 'enable_rate_limit'); ?><td><label><input type="checkbox" name="rate_limit_enabled" value="1" <?php checked($opts['rate_limit_enabled']); ?>> <?php esc_html_e('Use best-effort short-lived WordPress transients/object-cache counters. Disabled by default so Monitor mode never blocks unexpectedly; use server/CDN rate limits for high-volume attacks.', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('IP threshold', 'filter-guard-for-woocommerce'), 'rate_limit_ip_threshold'); ?><td><input type="number" name="rate_limit_ip_threshold" value="<?php echo esc_attr((string) $opts['rate_limit_ip_threshold']); ?>" min="1"></td></tr>
+                <tr><?php $this->render_setting_th(__('Range threshold', 'filter-guard-for-woocommerce'), 'range_threshold'); ?><td><input type="number" name="rate_limit_range_threshold" value="<?php echo esc_attr((string) $opts['rate_limit_range_threshold']); ?>" min="1"></td></tr>
+                <tr><?php $this->render_setting_th(__('Window seconds', 'filter-guard-for-woocommerce'), 'window_seconds'); ?><td><input type="number" name="rate_limit_window_seconds" value="<?php echo esc_attr((string) $opts['rate_limit_window_seconds']); ?>" min="10"></td></tr>
+                <tr><?php $this->render_setting_th(__('Block seconds', 'filter-guard-for-woocommerce'), 'block_seconds'); ?><td><input type="number" name="rate_limit_block_seconds" value="<?php echo esc_attr((string) $opts['rate_limit_block_seconds']); ?>" min="60"></td></tr>
             </table>
 
-            <h2><?php esc_html_e('Verified Search Bots', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Verified Search Bots', 'filter-guard-for-woocommerce'), 'section_verified_bots'); ?>
             <table class="form-table" role="presentation">
-                <tr><th scope="row"><?php esc_html_e('Bot verification', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="verify_googlebot" value="1" <?php checked($opts['verify_googlebot']); ?>> Googlebot</label><br><label><input type="checkbox" name="verify_bingbot" value="1" <?php checked($opts['verify_bingbot']); ?>> Bingbot</label><br><label><input type="checkbox" name="block_fake_search_bots" value="1" <?php checked($opts['block_fake_search_bots']); ?>> <?php esc_html_e('Block fake search bot user agents when verification fails', 'filter-guard-for-woocommerce'); ?></label></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Verified bot cache TTL', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="verified_bot_cache_ttl" value="<?php echo esc_attr((string) $opts['verified_bot_cache_ttl']); ?>" min="300"></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Verified bot max filter score', 'filter-guard-for-woocommerce'); ?></th><td><input type="number" name="verified_bot_max_score" value="<?php echo esc_attr((string) $opts['verified_bot_max_score']); ?>" min="0"></td></tr>
+                <tr><?php $this->render_setting_th(__('Bot verification', 'filter-guard-for-woocommerce'), 'bot_verification'); ?><td><label><input type="checkbox" name="verify_googlebot" value="1" <?php checked($opts['verify_googlebot']); ?>> Googlebot</label><br><label><input type="checkbox" name="verify_bingbot" value="1" <?php checked($opts['verify_bingbot']); ?>> Bingbot</label><br><label><input type="checkbox" name="block_fake_search_bots" value="1" <?php checked($opts['block_fake_search_bots']); ?>> <?php esc_html_e('Block fake search bot user agents when verification fails', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Verified bot cache TTL', 'filter-guard-for-woocommerce'), 'verified_bot_cache_ttl'); ?><td><input type="number" name="verified_bot_cache_ttl" value="<?php echo esc_attr((string) $opts['verified_bot_cache_ttl']); ?>" min="300"></td></tr>
+                <tr><?php $this->render_setting_th(__('Verified bot max filter score', 'filter-guard-for-woocommerce'), 'verified_bot_max_score'); ?><td><input type="number" name="verified_bot_max_score" value="<?php echo esc_attr((string) $opts['verified_bot_max_score']); ?>" min="0"></td></tr>
             </table>
 
-            <h2><?php esc_html_e('Health Check / Rollback / Uninstall', 'filter-guard-for-woocommerce'); ?></h2>
+            <?php $this->render_section_heading(__('Health Check / Rollback / Uninstall', 'filter-guard-for-woocommerce'), 'section_health'); ?>
             <table class="form-table" role="presentation">
-                <tr><th scope="row"><?php esc_html_e('Health check after changes', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="health_check_after_changes" value="1" <?php checked($opts['health_check_after_changes']); ?>> <?php esc_html_e('Run lightweight self-tests after writing server files.', 'filter-guard-for-woocommerce'); ?></label><br><label><input type="checkbox" name="rollback_on_health_failure" value="1" <?php checked($opts['rollback_on_health_failure']); ?>> <?php esc_html_e('Rollback latest backup if health check fails', 'filter-guard-for-woocommerce'); ?></label></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Health check test path', 'filter-guard-for-woocommerce'); ?></th><td><input type="text" class="regular-text code" name="health_check_test_path" value="<?php echo esc_attr((string) ($opts['health_check_test_path'] ?? '')); ?>" placeholder="/product-category/example/"><p class="description"><?php esc_html_e('Use a real WooCommerce category or shop path that returns 200 before query parameters are added. Policy checks fail when this is empty to avoid false PASS results from 404 pages.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
-                <tr><th scope="row"><?php esc_html_e('Remove file rules on uninstall', 'filter-guard-for-woocommerce'); ?></th><td><label><input type="checkbox" name="remove_file_rules_on_uninstall" value="1" <?php checked($opts['remove_file_rules_on_uninstall']); ?>> <?php esc_html_e('When uninstalling, remove managed .htaccess/robots.txt blocks and blocked-light.html.', 'filter-guard-for-woocommerce'); ?></label><p class="description"><strong><?php esc_html_e('Important:', 'filter-guard-for-woocommerce'); ?></strong> <?php esc_html_e('If this remains disabled, managed .htaccess and robots.txt blocks may remain after plugin uninstall. Enable it before deleting the plugin when you want full cleanup.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
+                <tr><?php $this->render_setting_th(__('Health check after changes', 'filter-guard-for-woocommerce'), 'health_check_after_changes'); ?><td><label><input type="checkbox" name="health_check_after_changes" value="1" <?php checked($opts['health_check_after_changes']); ?>> <?php esc_html_e('Run lightweight self-tests after writing server files.', 'filter-guard-for-woocommerce'); ?></label><br><label><input type="checkbox" name="rollback_on_health_failure" value="1" <?php checked($opts['rollback_on_health_failure']); ?>> <?php esc_html_e('Rollback latest backup if health check fails', 'filter-guard-for-woocommerce'); ?></label></td></tr>
+                <tr><?php $this->render_setting_th(__('Health check test path', 'filter-guard-for-woocommerce'), 'health_check_test_path'); ?><td><input type="text" class="regular-text code" name="health_check_test_path" value="<?php echo esc_attr($effective_health_check_test_path); ?>" placeholder="/shop/"><p class="description"><?php esc_html_e('Use a real WooCommerce category or shop path that returns 200 before query parameters are added. If left empty, Filter Guard auto-detects and saves the shop/category path when possible.', 'filter-guard-for-woocommerce'); ?></p><?php if ($effective_health_check_test_path !== ''): ?><p class="description"><?php esc_html_e('Current effective test path:', 'filter-guard-for-woocommerce'); ?> <code><?php echo esc_html($effective_health_check_test_path); ?></code></p><?php endif; ?></td></tr>
+                <tr><?php $this->render_setting_th(__('Remove file rules on uninstall', 'filter-guard-for-woocommerce'), 'remove_file_rules_on_uninstall'); ?><td><label><input type="checkbox" name="remove_file_rules_on_uninstall" value="1" <?php checked($opts['remove_file_rules_on_uninstall']); ?>> <?php esc_html_e('When uninstalling, remove managed .htaccess/robots.txt blocks and blocked-light.html.', 'filter-guard-for-woocommerce'); ?></label><p class="description"><strong><?php esc_html_e('Important:', 'filter-guard-for-woocommerce'); ?></strong> <?php esc_html_e('If this remains disabled, managed .htaccess and robots.txt blocks may remain after plugin uninstall. Enable it before deleting the plugin when you want full cleanup.', 'filter-guard-for-woocommerce'); ?></p></td></tr>
             </table>
-            <?php submit_button(__('Save Settings & Regenerate Rules', 'filter-guard-for-woocommerce')); ?>
+            <div class="filter-guard-for-woocommerce-settings-actions">
+                <?php submit_button(__('Save Settings & Regenerate Rules', 'filter-guard-for-woocommerce'), 'primary', 'submit', false); ?>
+            </div>
         </form>
         <?php
     }
@@ -1132,22 +1454,24 @@ final class Filter_Guard_For_Woocommerce_Plugin
     {
         $blocking_available = $this->blocking_server_rules_available($opts);
         ?>
-        <h2><?php esc_html_e('Server Rule Generators', 'filter-guard-for-woocommerce'); ?></h2>
+        <?php $this->render_section_heading(__('Server Rule Generators', 'filter-guard-for-woocommerce'), 'section_rule_generators'); ?>
         <p><?php esc_html_e('Use these generated rules for environments where the plugin cannot safely write server configuration directly.', 'filter-guard-for-woocommerce'); ?></p>
-        <p class="description"><?php esc_html_e('Server/CDN rules only pre-check Filter Guard cookie-name presence; the signed HMAC cookie is still validated in PHP. The Cloudflare expression uses args.names and regex cookie matching, so review plan support and snippets before production.', 'filter-guard-for-woocommerce'); ?></p>
-        <?php if (!$blocking_available): ?>
-            <div class="notice notice-warning inline"><p><?php esc_html_e('Blocking server rules are intentionally not generated in Off, Monitor, or SEO Soft Mode. Switch to Cookie, Cookie + Referer, Strict, or Emergency mode to generate blocking rules.', 'filter-guard-for-woocommerce'); ?></p></div>
-        <?php endif; ?>
+        <p class="description"><?php esc_html_e('Server/CDN rules only pre-check Filter Guard cookie-name presence; the signed HMAC cookie is still validated in PHP. Prefer the regex Cloudflare expression when your plan supports it; use the fallback expression when regex matching is unavailable.', 'filter-guard-for-woocommerce'); ?></p>
         <h3>Apache / LiteSpeed</h3><textarea readonly class="large-text code" rows="12"><?php echo esc_textarea($this->htaccess_block($opts)); ?></textarea>
         <h3>Nginx</h3><textarea readonly class="large-text code" rows="14"><?php echo esc_textarea($this->nginx_rules($opts)); ?></textarea>
-        <h3>Cloudflare Expression</h3><textarea readonly class="large-text code" rows="4"><?php echo esc_textarea($this->cloudflare_expression($opts)); ?></textarea>
+        <h3><?php esc_html_e('Cloudflare Expression - Regex / stricter', 'filter-guard-for-woocommerce'); ?></h3>
+        <p class="description filter-guard-for-woocommerce-rule-note"><?php esc_html_e('Copy only this expression when the Cloudflare rule editor accepts the regex matches operator. Do not paste the fallback expression together with this one.', 'filter-guard-for-woocommerce'); ?></p>
+        <textarea readonly class="large-text code" rows="4"><?php echo esc_textarea($this->cloudflare_expression($opts, true)); ?></textarea>
+        <h3><?php esc_html_e('Cloudflare Expression - No-regex fallback', 'filter-guard-for-woocommerce'); ?></h3>
+        <p class="description filter-guard-for-woocommerce-rule-note"><?php esc_html_e('Use only this fallback expression if your Cloudflare plan or rules UI rejects regex matching.', 'filter-guard-for-woocommerce'); ?></p>
+        <textarea readonly class="large-text code" rows="4"><?php echo esc_textarea($this->cloudflare_expression($opts, false)); ?></textarea>
         <?php
     }
 
     private function render_backups(array $backups): void
     {
         ?>
-        <h2><?php esc_html_e('Rollback Backups', 'filter-guard-for-woocommerce'); ?></h2>
+        <?php $this->render_section_heading(__('Rollback Backups', 'filter-guard-for-woocommerce'), 'section_backups'); ?>
         <table class="widefat striped filter-guard-for-woocommerce-table"><thead><tr><th><?php esc_html_e('Backup', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Files', 'filter-guard-for-woocommerce'); ?></th><th><?php esc_html_e('Reason', 'filter-guard-for-woocommerce'); ?></th></tr></thead><tbody>
         <?php if (!$backups): ?><tr><td colspan="3"><?php esc_html_e('No backups yet.', 'filter-guard-for-woocommerce'); ?></td></tr><?php endif; ?>
         <?php foreach ($backups as $backup): ?><tr><td><code><?php echo esc_html($backup['name']); ?></code></td><td><?php echo esc_html(implode(', ', $backup['files'])); ?></td><td><?php echo esc_html($backup['reason']); ?></td></tr><?php endforeach; ?>
@@ -1158,7 +1482,7 @@ final class Filter_Guard_For_Woocommerce_Plugin
     private function render_action_tools(): void
     {
         ?>
-        <h2><?php esc_html_e('Manual Actions / Test Tools', 'filter-guard-for-woocommerce'); ?></h2>
+        <?php $this->render_section_heading(__('Manual Actions / Test Tools', 'filter-guard-for-woocommerce'), 'section_manual_actions'); ?>
         <?php $this->action_form('run_tests', __('Run Health Check / Self-Tests', 'filter-guard-for-woocommerce'), 'primary'); ?>
         <?php $this->action_form('rewrite_htaccess', __('Rewrite .htaccess Guard', 'filter-guard-for-woocommerce'), 'secondary'); ?>
         <?php $this->action_form('remove_htaccess', __('Remove .htaccess Guard', 'filter-guard-for-woocommerce'), 'delete'); ?>
@@ -1374,6 +1698,136 @@ final class Filter_Guard_For_Woocommerce_Plugin
         return (string) preg_replace($pattern, '', $content);
     }
 
+
+    private function local_file_exists(string $path): bool
+    {
+        $fs = $this->filesystem();
+        if ($fs && $fs->exists($path)) {
+            return true;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_exists -- Required fallback for .htaccess diagnostics when WP_Filesystem cannot initialize on some hosts.
+        return file_exists($path);
+    }
+
+    private function local_file_is_writable(string $path): bool
+    {
+        $fs = $this->filesystem();
+        if ($fs && $fs->exists($path)) {
+            return (bool) $fs->is_writable($path);
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Required fallback for .htaccess writeability checks when WP_Filesystem is unavailable.
+        return is_writable($path);
+    }
+
+    private function local_directory_is_writable(string $path): bool
+    {
+        $fs = $this->filesystem();
+        if ($fs && $fs->exists($path)) {
+            return (bool) $fs->is_writable($path);
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Required fallback for root directory writeability diagnostics when WP_Filesystem is unavailable.
+        return is_writable($path);
+    }
+
+    private function ensure_local_file_for_write(string $path): bool
+    {
+        if ($this->local_file_exists($path)) {
+            return $this->local_file_is_writable($path);
+        }
+
+        $fs = $this->filesystem();
+        if ($fs && $fs->put_contents($path, '', $this->fs_chmod_file())) {
+            return true;
+        }
+
+        if (!$this->local_directory_is_writable(dirname($path))) {
+            return false;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Required fallback for creating root .htaccess in cPanel/Apache environments.
+        if (file_put_contents($path, '') === false) {
+            return false;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Keep created .htaccess at WordPress' configured file mode.
+        @chmod($path, $this->fs_chmod_file());
+        return true;
+    }
+
+    private function read_local_text_file(string $path): ?string
+    {
+        $fs = $this->filesystem();
+        if ($fs && $fs->exists($path) && $fs->is_readable($path)) {
+            $content = $fs->get_contents($path);
+            return is_string($content) ? $content : null;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_readable -- Required fallback for .htaccess reads when WP_Filesystem cannot initialize.
+        if (!is_readable($path)) {
+            return null;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Required fallback for .htaccess reads when WP_Filesystem cannot initialize.
+        $content = file_get_contents($path);
+        return is_string($content) ? $content : null;
+    }
+
+    private function write_local_text_file(string $path, string $content): bool
+    {
+        $fs = $this->filesystem();
+        if ($fs && $fs->put_contents($path, $content, $this->fs_chmod_file())) {
+            return true;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Required fallback for .htaccess writes in cPanel/Apache environments where WP_Filesystem cannot initialize.
+        $bytes = file_put_contents($path, $content, LOCK_EX);
+        if ($bytes === false) {
+            return false;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Keep .htaccess at WordPress' configured file mode after fallback write.
+        @chmod($path, $this->fs_chmod_file());
+        return true;
+    }
+
+
+    private function hash_file_contents(string $path): string
+    {
+        $content = $this->read_local_text_file($path);
+        return is_string($content) ? hash('sha256', $content) : '';
+    }
+
+    private function htaccess_diagnostics(): array
+    {
+        $path = $this->htaccess_path();
+        $content = $this->read_local_text_file($path);
+        $fs = $this->filesystem();
+        $method = defined('FS_METHOD') ? (string) FS_METHOD : (is_object($fs) ? get_class($fs) : 'unavailable');
+        return [
+            'path' => $path,
+            'exists' => $this->local_file_exists($path),
+            'readable' => is_string($content),
+            'writable' => $this->local_file_exists($path) ? $this->local_file_is_writable($path) : $this->local_directory_is_writable(dirname($path)),
+            'has_managed_block' => is_string($content) && (strpos($content, self::HTACCESS_BEGIN) !== false || strpos($content, self::LEGACY_HTACCESS_BEGIN) !== false),
+            'sha256' => is_string($content) ? hash('sha256', $content) : '',
+            'filesystem_method' => $method,
+        ];
+    }
+
+    private function record_htaccess_diagnostics(string $reason, string $operation, bool $success, string $error = '', string $hash_before = '', string $hash_after = ''): void
+    {
+        $diag = $this->htaccess_diagnostics();
+        update_option(self::HTACCESS_DIAG_OPTION, [
+            'created_at' => current_time('mysql'),
+            'reason' => $reason,
+            'operation' => $operation,
+            'success' => $success ? 1 : 0,
+            'error' => $error,
+            'hash_before' => $hash_before,
+            'hash_after' => $hash_after,
+            'path' => $diag['path'],
+            'exists' => $diag['exists'] ? 1 : 0,
+            'readable' => $diag['readable'] ? 1 : 0,
+            'writable' => $diag['writable'] ? 1 : 0,
+            'has_managed_block' => $diag['has_managed_block'] ? 1 : 0,
+            'filesystem_method' => $diag['filesystem_method'],
+        ], false);
+    }
+
     private function write_blocked_light_file(): bool
     {
         $fs = $this->filesystem();
@@ -1390,7 +1844,12 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function blocking_server_rules_available(array $opts): bool
     {
-        return !in_array((string) ($opts['protection_mode'] ?? 'off'), ['off', 'seo_only', 'monitor'], true);
+        return in_array((string) ($opts['protection_mode'] ?? 'off'), ['strict', 'emergency'], true);
+    }
+
+    private function htaccess_managed_rules_needed(array $opts): bool
+    {
+        return $this->blocking_server_rules_available($opts) || !empty($opts['block_xmlrpc']);
     }
 
     private function robots_file_rules_available(array $opts): bool
@@ -1475,37 +1934,41 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function safe_mode_server_rules_message(array $opts): string
     {
-        return '# No blocking server rule generated for mode: ' . (string) ($opts['protection_mode'] ?? 'off') . "\n" .
-            '# Switch to Cookie, Cookie + Referer, Strict, or Emergency mode before copying server-level blocking rules.' . "\n";
+        return '# No pre-PHP filtered-URL blocking rule is generated for mode: ' . (string) ($opts['protection_mode'] ?? 'off') . "\n" .
+            '# Cookie and Cookie + Referer modes are enforced in WordPress/PHP to avoid false blocking real shoppers.' . "\n" .
+            '# Server-level filtered-URL blocking is generated only for Strict and Emergency modes.' . "\n";
     }
 
     public function write_htaccess_guard(string $reason = 'htaccess_write'): bool
     {
         $opts = $this->options();
-        if (!$this->blocking_server_rules_available($opts)) {
+        if (!$this->htaccess_managed_rules_needed($opts)) {
             return $this->remove_htaccess_guard($reason . '_safe_mode');
         }
-        $errors = $this->validate_options($opts);
+        $errors = $this->blocking_server_rules_available($opts) ? $this->validate_options($opts) : [];
         if ($errors) {
-            return false;
-        }
-        $fs = $this->filesystem();
-        if (!$fs) {
+            $this->record_htaccess_diagnostics($reason, 'write', false, 'Validation failed: ' . implode(' ', $errors));
             return false;
         }
         $path = $this->htaccess_path();
-        if (!$fs->exists($path) && !$fs->put_contents($path, '', $this->fs_chmod_file())) {
-            return false;
-        }
-        if (!$fs->is_writable($path)) {
+        $hash_before = $this->hash_file_contents($path);
+        if (!$this->ensure_local_file_for_write($path)) {
+            $this->record_htaccess_diagnostics($reason, 'write', false, 'File is not writable or could not be created.', $hash_before, $this->hash_file_contents($path));
             return false;
         }
         $this->backup_file($path, $reason);
-        $content = (string) $fs->get_contents($path);
+        $content = $this->read_local_text_file($path);
+        if ($content === null) {
+            $this->record_htaccess_diagnostics($reason, 'write', false, 'File could not be read before writing.', $hash_before, $this->hash_file_contents($path));
+            return false;
+        }
         $content = $this->remove_managed_block($content, self::HTACCESS_BEGIN, self::HTACCESS_END);
         $content = $this->remove_managed_block($content, self::LEGACY_HTACCESS_BEGIN, self::LEGACY_HTACCESS_END);
         $block = $this->htaccess_block($opts);
-        $ok = (bool) $fs->put_contents($path, $block . "\n" . ltrim($content), $this->fs_chmod_file());
+        $ok = $this->write_local_text_file($path, $block . "
+" . ltrim($content));
+        $hash_after = $this->hash_file_contents($path);
+        $this->record_htaccess_diagnostics($reason, 'write', $ok, $ok ? '' : 'Write failed through WP_Filesystem and local fallback.', $hash_before, $hash_after);
         if ($ok) {
             $this->log_event('htaccess_rule_regenerated', ['action_taken' => $reason, 'response_status' => 200]);
         }
@@ -1514,58 +1977,67 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     public function remove_htaccess_guard(string $reason = 'htaccess_remove'): bool
     {
-        $fs = $this->filesystem();
-        if (!$fs) {
-            return false;
-        }
         $path = $this->htaccess_path();
-        if (!$fs->exists($path)) {
+        $hash_before = $this->hash_file_contents($path);
+        if (!$this->local_file_exists($path)) {
+            $this->record_htaccess_diagnostics($reason, 'remove', true, 'File does not exist.', $hash_before, '');
             return true;
         }
-        if (!$fs->is_writable($path)) {
+        if (!$this->local_file_is_writable($path)) {
+            $this->record_htaccess_diagnostics($reason, 'remove', false, 'File exists but is not writable.', $hash_before, $this->hash_file_contents($path));
             return false;
         }
         $this->backup_file($path, $reason);
-        $content = (string) $fs->get_contents($path);
-        $content = $this->remove_managed_block($content, self::HTACCESS_BEGIN, self::HTACCESS_END);
-        $content = $this->remove_managed_block($content, self::LEGACY_HTACCESS_BEGIN, self::LEGACY_HTACCESS_END);
-        return (bool) $fs->put_contents($path, ltrim($content), $this->fs_chmod_file());
+        $content = $this->read_local_text_file($path);
+        if ($content === null) {
+            $this->record_htaccess_diagnostics($reason, 'remove', false, 'File could not be read before removing managed block.', $hash_before, $this->hash_file_contents($path));
+            return false;
+        }
+        $clean = $this->remove_managed_block($content, self::HTACCESS_BEGIN, self::HTACCESS_END);
+        $clean = $this->remove_managed_block($clean, self::LEGACY_HTACCESS_BEGIN, self::LEGACY_HTACCESS_END);
+        if ($clean === $content) {
+            $this->record_htaccess_diagnostics($reason, 'remove', true, 'No managed block was present.', $hash_before, $hash_before);
+            return true;
+        }
+        $ok = $this->write_local_text_file($path, ltrim($clean));
+        $hash_after = $this->hash_file_contents($path);
+        $this->record_htaccess_diagnostics($reason, 'remove', $ok, $ok ? '' : 'Remove write failed through WP_Filesystem and local fallback.', $hash_before, $hash_after);
+        if ($ok) {
+            $this->log_event('htaccess_rule_removed', ['action_taken' => $reason, 'response_status' => 200]);
+        }
+        return $ok;
     }
 
     private function htaccess_block(array $opts): string
     {
-        if (!$this->blocking_server_rules_available($opts)) {
-            return $this->safe_mode_server_rules_message($opts);
-        }
         if ($opts['protection_mode'] === 'emergency') {
             return $this->emergency_htaccess_block($opts);
         }
-        $referer_regex = $this->internal_referer_regex();
         $path_regex = $this->server_path_regex($opts);
         $query_regex = trim((string) $opts['query_keys_regex']);
-        $cookie_regex = $this->server_cookie_regex($opts);
         $block_response = $opts['block_response'] === '404' ? 'R=404,L' : 'F,L';
         $lines = [];
         $lines[] = self::HTACCESS_BEGIN;
-        $lines[] = 'ErrorDocument 403 ' . $this->blocked_light_url_path();
-        $lines[] = 'ErrorDocument 404 ' . $this->blocked_light_url_path();
-        $lines[] = '';
+        if ($this->blocking_server_rules_available($opts)) {
+            $lines[] = 'ErrorDocument 403 ' . $this->blocked_light_url_path();
+            $lines[] = 'ErrorDocument 404 ' . $this->blocked_light_url_path();
+            $lines[] = '';
+        }
         $lines[] = '<IfModule mod_rewrite.c>';
         $lines[] = 'RewriteEngine On';
         $lines[] = '';
-        $lines[] = '# Block expensive WooCommerce layered-filter crawl/flood before PHP.';
-        $lines[] = '# WordPress role allowlists cannot bypass this pre-PHP server block.';
-        $lines[] = 'RewriteCond %{REQUEST_URI} ' . $path_regex . ' [NC]';
-        $lines[] = 'RewriteCond %{QUERY_STRING} (^|&)(' . $query_regex . ')= [NC]';
-        if ($opts['protection_mode'] === 'cookie') {
-            $lines[] = 'RewriteCond %{HTTP_COOKIE} !(^|;\\s*)(' . $cookie_regex . ')= [NC]';
-        } elseif ($opts['protection_mode'] === 'cookie_referer') {
-            $lines[] = 'RewriteCond %{HTTP_COOKIE} !(^|;\\s*)(' . $cookie_regex . ')= [NC,OR]';
-            $lines[] = 'RewriteCond %{HTTP_REFERER} !' . $referer_regex . ' [NC]';
-        } elseif ($opts['protection_mode'] === 'strict') {
-            $lines[] = '# Strict mode: no additional cookie/referer condition.';
+        if ($this->blocking_server_rules_available($opts)) {
+            $lines[] = '# Block expensive WooCommerce layered-filter crawl/flood before PHP.';
+            $lines[] = '# WordPress/PHP cannot log requests stopped by this pre-PHP server block.';
+            $lines[] = '# WordPress role allowlists cannot bypass this pre-PHP server block.';
+            $lines[] = '# Strict/Emergency modes intentionally do not trust cookies at the Apache layer.';
+            $lines[] = 'RewriteCond %{REQUEST_URI} ' . $path_regex . ' [NC]';
+            $lines[] = 'RewriteCond %{QUERY_STRING} (^|&)(' . $query_regex . ')= [NC]';
+            $lines[] = 'RewriteRule ^ - [' . $block_response . ']';
+        } else {
+            $lines[] = '# Cookie-based filtered URL blocking is intentionally handled by WordPress/PHP.';
+            $lines[] = '# This managed block contains only independent non-filter rules enabled below.';
         }
-        $lines[] = 'RewriteRule ^ - [' . $block_response . ']';
         if (!empty($opts['block_xmlrpc'])) {
             $lines[] = '';
             $lines[] = '# Optional XML-RPC abuse block.';
@@ -1579,7 +2051,9 @@ final class Filter_Guard_For_Woocommerce_Plugin
             $lines[] = '</Files>';
         }
         $lines[] = self::HTACCESS_END;
-        return implode("\n", $lines) . "\n";
+        return implode("
+", $lines) . "
+";
     }
 
     private function emergency_htaccess_block(array $opts): string
@@ -1620,6 +2094,11 @@ final class Filter_Guard_For_Woocommerce_Plugin
 " .
             "</IfModule>
 " .
+            (!empty($opts['block_xmlrpc']) ? "
+<Files \"xmlrpc.php\">
+    Require all denied
+</Files>
+" : '') .
             self::HTACCESS_END . "
 ";
     }
@@ -1671,12 +2150,12 @@ final class Filter_Guard_For_Woocommerce_Plugin
         return implode("\n", $lines) . "\n";
     }
 
-    private function cloudflare_expression(array $opts): string
+    private function cloudflare_expression(array $opts, bool $use_regex_cookie = true): string
     {
         if (!$this->blocking_server_rules_available($opts)) {
             return trim($this->safe_mode_server_rules_message($opts));
         }
-        $cookie_expr = $this->cloudflare_cookie_presence_expression($opts);
+        $cookie_expr = $this->cloudflare_cookie_presence_expression($opts, $use_regex_cookie);
         $path_expr = $this->cloudflare_path_expression();
         $query_expr = $this->cloudflare_query_expression($opts);
         $filtered = '(' . $path_expr . ' and ' . $query_expr . ')';
@@ -1696,16 +2175,16 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
         foreach ($patterns['exact'] as $key) {
             $key = strtolower($key);
-            $parts[] = 'any(lower(http.request.uri.args.names[*])[*] == "' . $this->cloudflare_escape($key) . '")';
+            $parts[] = 'any(lower(http.request.uri.args.names[*]) == "' . $this->cloudflare_escape($key) . '")';
         }
         foreach ($patterns['prefix'] as $prefix) {
             $prefix = strtolower($prefix);
-            $parts[] = 'any(starts_with(lower(http.request.uri.args.names[*])[*], "' . $this->cloudflare_escape($prefix) . '"))';
+            $parts[] = 'any(starts_with(lower(http.request.uri.args.names[*]), "' . $this->cloudflare_escape($prefix) . '"))';
         }
 
         if (!$parts) {
-            $parts[] = 'any(starts_with(lower(http.request.uri.args.names[*])[*], "filter_"))';
-            $parts[] = 'any(starts_with(lower(http.request.uri.args.names[*])[*], "query_type_"))';
+            $parts[] = 'any(starts_with(lower(http.request.uri.args.names[*]), "filter_"))';
+            $parts[] = 'any(starts_with(lower(http.request.uri.args.names[*]), "query_type_"))';
         }
 
         return '(' . implode(' or ', array_values(array_unique($parts))) . ')';
@@ -1795,30 +2274,62 @@ final class Filter_Guard_For_Woocommerce_Plugin
     {
         $opts = $this->options();
         $test_path = $this->health_check_test_path($opts);
-        $has_configured_test_path = (string) ($opts['health_check_test_path'] ?? '') !== '';
-        $url = add_query_arg(['filter_poe' => 'donthave', 'query_type_poe' => 'or'], home_url($test_path));
-        $cookie_name = $this->current_cookie_name($opts);
-        $cookie_value = $this->make_human_cookie_value($opts);
-        $referer = home_url($test_path);
+        $configured_path = $this->sanitize_health_check_test_path((string) ($opts['health_check_test_path'] ?? ''));
+        $auto_detected = $configured_path === '' && $test_path !== '';
+        $has_test_path = $test_path !== '';
         $expected = $this->self_test_expected_statuses($opts);
         $items = [];
         $items[] = $this->test_head(__('Homepage', 'filter-guard-for-woocommerce'), home_url('/'), [], [200]);
         $items[] = [
-            'label' => __('Policy test URL configured', 'filter-guard-for-woocommerce'),
-            'url' => home_url($test_path),
-            'status' => $has_configured_test_path ? 'configured' : 'missing',
+            'label' => __('Policy test URL available', 'filter-guard-for-woocommerce'),
+            'url' => $has_test_path ? home_url($test_path) : '',
+            'status' => $has_test_path ? ($auto_detected ? 'auto-detected' : 'configured') : 'missing',
             'x_robots' => '',
-            'ok' => $has_configured_test_path,
-            'note' => $has_configured_test_path ? '' : __('Set a real WooCommerce category/shop path to avoid false PASS results from 404 pages.', 'filter-guard-for-woocommerce'),
+            'ok' => $has_test_path,
+            'note' => $has_test_path ? ($auto_detected ? __('Auto-detected a WooCommerce shop/category path. Saving an explicit path is still recommended.', 'filter-guard-for-woocommerce') : '') : __('Set a real WooCommerce category/shop path to avoid false PASS results from 404 pages.', 'filter-guard-for-woocommerce'),
         ];
-        $items[] = $this->test_head(__('Configured clean test URL', 'filter-guard-for-woocommerce'), home_url($test_path), [], [200]);
-        $items[] = $this->test_head(__('No cookie / no referer', 'filter-guard-for-woocommerce'), $url, [], $expected['no_cookie']);
-        $items[] = $this->test_head(__('Cookie only', 'filter-guard-for-woocommerce'), $url, ['headers' => ['Cookie' => $cookie_name . '=' . $cookie_value]], $expected['cookie_only']);
-        $items[] = $this->test_head(__('Cookie + internal referer', 'filter-guard-for-woocommerce'), $url, ['headers' => ['Cookie' => $cookie_name . '=' . $cookie_value, 'Referer' => $referer]], $expected['cookie_referer']);
+
+        if ($has_test_path) {
+            $url = add_query_arg(['filter_poe' => 'donthave', 'query_type_poe' => 'or'], home_url($test_path));
+            $cookie_name = $this->current_cookie_name($opts);
+            $cookie_value = $this->make_human_cookie_value($opts);
+            $referer = home_url($test_path);
+            $health_token = $this->create_health_check_token();
+            $cookie_headers = ['Cookie' => $cookie_name . '=' . $cookie_value];
+            $cookie_referer_headers = ['Cookie' => $cookie_name . '=' . $cookie_value, 'Referer' => $referer];
+            $bypass_headers = ['Referer' => $referer, 'X-Filter-Guard-Health-Check' => $health_token];
+
+            $items[] = $this->test_head(__('Configured clean test URL', 'filter-guard-for-woocommerce'), home_url($test_path), [], [200]);
+            $items[] = $this->test_head(__('No cookie / no referer', 'filter-guard-for-woocommerce'), $url, [], $expected['no_cookie']);
+            $items[] = $this->test_head(__('Cookie only', 'filter-guard-for-woocommerce'), $url, ['headers' => $cookie_headers], $expected['cookie_only']);
+            $items[] = $this->test_head(__('Cookie + internal referer', 'filter-guard-for-woocommerce'), $url, ['headers' => $cookie_referer_headers], $expected['cookie_referer']);
+            $items[] = $this->test_head(__('Health-check bypass token', 'filter-guard-for-woocommerce'), $url, ['headers' => $bypass_headers], $expected['cookie_referer']);
+        }
+
         $xmlrpc_expected = !empty($opts['block_xmlrpc']) && !in_array($opts['protection_mode'], ['off', 'monitor'], true) ? [403, 404, 405] : [200, 301, 302, 403, 404, 405];
         $items[] = $this->test_head(__('XML-RPC', 'filter-guard-for-woocommerce'), home_url('/xmlrpc.php'), [], $xmlrpc_expected);
         $items[] = $this->test_head(__('robots.txt', 'filter-guard-for-woocommerce'), home_url('/robots.txt'), [], [200]);
         update_option(self::TEST_OPTION, ['time' => current_time('mysql'), 'mode' => $opts['protection_mode'], 'test_path' => $test_path, 'items' => $items], false);
+    }
+
+    private function create_health_check_token(): string
+    {
+        $token = wp_generate_password(32, false, false);
+        set_transient(self::HEALTH_CHECK_TOKEN_TRANSIENT, $token, 5 * MINUTE_IN_SECONDS);
+        return $token;
+    }
+
+    private function request_has_valid_health_check_token(): bool
+    {
+        $token = $this->server_value('HTTP_X_FILTER_GUARD_HEALTH_CHECK');
+        if ($token === '') {
+            return false;
+        }
+        $stored = get_transient(self::HEALTH_CHECK_TOKEN_TRANSIENT);
+        if (!is_string($stored) || $stored === '') {
+            return false;
+        }
+        return hash_equals($stored, $token);
     }
 
     private function self_test_expected_statuses(array $opts): array
@@ -1890,11 +2401,41 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function health_check_test_path(array $opts): string
     {
-        $path = (string) ($opts['health_check_test_path'] ?? '');
+        $path = $this->sanitize_health_check_test_path((string) ($opts['health_check_test_path'] ?? ''));
         if ($path !== '') {
             return $path;
         }
-        return '/product-category/active-equipment/';
+        return $this->auto_detect_health_check_test_path();
+    }
+
+    private function auto_detect_health_check_test_path(): string
+    {
+        if (function_exists('wc_get_page_permalink')) {
+            $shop_url = (string) wc_get_page_permalink('shop');
+            $shop_path = $this->sanitize_health_check_test_path($shop_url);
+            if ($shop_path !== '') {
+                return $shop_path;
+            }
+        }
+
+        if (function_exists('get_terms') && function_exists('get_term_link')) {
+            $terms = get_terms([
+                'taxonomy' => 'product_cat',
+                'hide_empty' => true,
+                'number' => 1,
+            ]);
+            if (is_array($terms) && !empty($terms)) {
+                $link = get_term_link($terms[0]);
+                if (!is_wp_error($link)) {
+                    $term_path = $this->sanitize_health_check_test_path((string) $link);
+                    if ($term_path !== '') {
+                        return $term_path;
+                    }
+                }
+            }
+        }
+
+        return '';
     }
 
     private function validate_options(array $opts): array
@@ -1908,13 +2449,13 @@ final class Filter_Guard_For_Woocommerce_Plugin
         }
         $legacy_cookie_regex = trim((string) ($opts['allowed_cookie_regex'] ?? ''));
         if ($legacy_cookie_regex !== '' && !$this->regex_is_valid($legacy_cookie_regex)) {
-            $errors[] = __('Legacy compatible cookie regex is invalid.', 'filter-guard-for-woocommerce');
+            $errors[] = __('Compatible cookie-name regex is invalid.', 'filter-guard-for-woocommerce');
         }
         $ua_regex = trim((string) ($opts['allow_user_agent_regex'] ?? ''));
         if ($ua_regex !== '' && !$this->regex_is_valid($ua_regex)) {
             $errors[] = __('Allow User-Agent regex is invalid.', 'filter-guard-for-woocommerce');
         }
-        if (!empty($opts['manage_htaccess']) && !in_array($opts['protection_mode'], ['off', 'seo_only', 'monitor', 'emergency'], true)) {
+        if (!empty($opts['manage_htaccess']) && in_array($opts['protection_mode'], ['strict', 'emergency'], true)) {
             foreach (['protected_paths_regex', 'query_keys_regex'] as $key) {
                 if (!$this->apache_regex_fragment_is_safe((string) ($opts[$key] ?? ''))) {
                     /* translators: %s: settings field key. */
@@ -1927,20 +2468,19 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function sanitize_cookie_name($name): string
     {
-        $name = sanitize_key((string) wp_unslash($name));
+        $name = sanitize_key((string) $name);
         return preg_replace('/[^a-zA-Z0-9_\-]/', '', $name) ?: self::defaults()['cookie_name'];
     }
 
     private function sanitize_regex_fragment($value): string
     {
-        $value = (string) wp_unslash($value);
-        $value = trim($value);
+        $value = trim((string) $value);
         return str_replace(["\r", "\n"], '', $value);
     }
 
     private function sanitize_multiline($value): string
     {
-        $value = (string) wp_unslash($value);
+        $value = (string) $value;
         $lines = preg_split('/[\r\n]+/', $value);
         $out = [];
         foreach ((array) $lines as $line) {
@@ -1954,7 +2494,7 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function sanitize_roles($value): string
     {
-        $value = (string) wp_unslash($value);
+        $value = (string) $value;
         $parts = array_filter(array_map('sanitize_key', array_map('trim', explode(',', $value))));
         return implode(',', $parts);
     }
@@ -2072,17 +2612,42 @@ final class Filter_Guard_For_Woocommerce_Plugin
 
     private function request_has_valid_human_cookie(array $opts): bool
     {
-        $name = $this->current_cookie_name($opts);
-        $cookie_value = $this->cookie_value($name);
-        if ($name !== '' && $cookie_value !== '' && $this->validate_human_cookie($cookie_value, $opts)) {
+        if ($this->request_has_valid_health_check_token()) {
             return true;
         }
-        $legacy = $this->sanitize_cookie_name($opts['cookie_name']);
-        $legacy_cookie_value = $this->cookie_value($legacy);
-        if ($legacy !== $name && $legacy_cookie_value !== '' && $this->validate_human_cookie($legacy_cookie_value, $opts)) {
-            return true;
+
+        foreach ($this->candidate_human_cookie_names($opts) as $name) {
+            $cookie_value = $this->cookie_value($name);
+            if ($cookie_value !== '' && $this->validate_human_cookie($cookie_value, $opts)) {
+                return true;
+            }
         }
         return false;
+    }
+
+    private function candidate_human_cookie_names(array $opts): array
+    {
+        $names = [];
+        $current = $this->current_cookie_name($opts);
+        if ($current !== '') {
+            $names[] = $current;
+        }
+        $legacy = $this->sanitize_cookie_name($opts['cookie_name'] ?? self::defaults()['cookie_name']);
+        if ($legacy !== '') {
+            $names[] = $legacy;
+        }
+
+        $regex = trim((string) ($opts['allowed_cookie_regex'] ?? ''));
+        if ($regex !== '') {
+            foreach (array_keys($_COOKIE) as $cookie_name) {
+                $cookie_name = is_scalar($cookie_name) ? (string) $cookie_name : '';
+                if ($cookie_name !== '' && $this->regex_match($regex, $cookie_name, 'i') === 1) {
+                    $names[] = $cookie_name;
+                }
+            }
+        }
+
+        return array_values(array_unique(array_filter($names)));
     }
 
     private function server_cookie_base_name(array $opts): string
@@ -2101,14 +2666,26 @@ final class Filter_Guard_For_Woocommerce_Plugin
         return preg_quote($base, '/') . '(_[a-f0-9]{8})?';
     }
 
-    private function cloudflare_cookie_presence_expression(array $opts): string
+    private function cloudflare_cookie_presence_expression(array $opts, bool $use_regex_cookie = true): string
     {
         $base = $this->server_cookie_base_name($opts);
         if ($base === '') {
             return 'false';
         }
-        $regex = '(^|;\s*)' . preg_quote($base, '/') . '(_[a-f0-9]{8})?=';
-        return 'http.cookie matches r"' . $this->cloudflare_escape_raw_regex($regex) . '"';
+
+        if ($use_regex_cookie) {
+            $regex = '(^|;\s*)' . preg_quote($base, '/') . '(_[a-f0-9]{8})?=';
+            return 'http.cookie matches r"' . $this->cloudflare_escape_raw_regex($regex) . '"';
+        }
+
+        $base_cookie = $this->cloudflare_escape($base . '=');
+        $base_cookie_spaced = $this->cloudflare_escape('; ' . $base . '=');
+        $base_cookie_compact = $this->cloudflare_escape(';' . $base . '=');
+        $rotated_prefix = $this->cloudflare_escape($base . '_');
+        $rotated_prefix_spaced = $this->cloudflare_escape('; ' . $base . '_');
+        $rotated_prefix_compact = $this->cloudflare_escape(';' . $base . '_');
+
+        return '(starts_with(http.cookie, "' . $base_cookie . '") or http.cookie contains "' . $base_cookie_spaced . '" or http.cookie contains "' . $base_cookie_compact . '" or starts_with(http.cookie, "' . $rotated_prefix . '") or http.cookie contains "' . $rotated_prefix_spaced . '" or http.cookie contains "' . $rotated_prefix_compact . '")';
     }
 
     private function cloudflare_escape_raw_regex(string $value): string
@@ -2699,7 +3276,13 @@ final class Filter_Guard_For_Woocommerce_Plugin
     }
 }
 
-register_activation_hook(__FILE__, ['Filter_Guard_For_Woocommerce_Plugin', 'activate']);
-register_deactivation_hook(__FILE__, ['Filter_Guard_For_Woocommerce_Plugin', 'deactivate']);
+add_action('before_woocommerce_init', static function (): void {
+    if (class_exists('\\Automattic\\WooCommerce\\Utilities\\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
 
-Filter_Guard_For_Woocommerce_Plugin::instance();
+register_activation_hook(__FILE__, ['Filter_Guard_For_WooCommerce_Plugin', 'activate']);
+register_deactivation_hook(__FILE__, ['Filter_Guard_For_WooCommerce_Plugin', 'deactivate']);
+
+Filter_Guard_For_WooCommerce_Plugin::instance();

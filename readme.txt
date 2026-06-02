@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.4.1
+Stable tag: 1.5.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,7 +30,7 @@ Major features:
 * Auto Emergency Mode with strict/emergency thresholds, recovery period, and filtered-request pressure counting even in Monitor mode.
 * Verified Googlebot and Bingbot checks using reverse DNS plus forward DNS confirmation.
 * Apache/LiteSpeed `.htaccess`, Nginx, and Cloudflare rule generator with mode-aware, public-root-aware, subdirectory-aware, signed-cookie-pattern server checks, Cloudflare args.names query matching, and emergency rules aligned with configured query keys.
-* Health Check / Self-Test after changes with optional rollback, GET requests, redirect following, and configurable real WooCommerce test paths.
+* Health Check / Self-Test after changes with real signed-cookie tests, separate bypass-token test, optional rollback, redirect following, and configurable real WooCommerce test paths.
 * Rollback backups for public-root `.htaccess`, `robots.txt`, and `blocked-light.html`.
 * robots.txt virtual and physical managed blocks, disabled in Off/Monitor modes.
 * Optional XML-RPC blocking.
@@ -101,75 +101,47 @@ Default privacy behavior:
 
 == Changelog ==
 
-= 1.4.1 =
-* Renamed the main plugin class from lowercase prefix style to PascalCase prefix style: Filter_Guard_For_Woocommerce_Plugin.
-* Kept all 1.4.0 hardening changes intact.
+= 1.5.8 =
+* Fixed Plugin Check warnings for translation loading, nonce/input handling helpers, and .htaccess writable diagnostics.
 
-= 1.4.0 =
-* Count all expensive filtered requests, not only blocked requests, for Auto Emergency pressure detection.
-* Align Emergency `.htaccess` query matching with the configured query key regex.
-* Generate Cloudflare query rules from `http.request.uri.args.names` instead of broad query-string contains checks.
-* Tighten Cloudflare cookie pre-check with a stable signed-cookie regex pattern for rotated cookie names.
+= 1.5.7 =
+* Removed selected explanatory admin notices and the settings guide cards. Moved the save/regenerate button outside collapsed settings sections.
 
-= 1.3.9 =
-* Made generated Apache/LiteSpeed, Nginx, and Cloudflare cookie checks stable when daily signed-cookie name rotation is enabled.
-* Expanded generated Cloudflare query matching to follow configured expensive query keys beyond filter_ and query_type_.
-* Clarified that server/CDN rules only pre-check plugin-owned cookie name patterns; PHP validates HMAC signatures.
+= 1.5.6 =
+* Fixed Persian translation strings that showed a literal Unicode escape sequence instead of real zero-width non-joiner characters in the admin UI.
 
-= 1.3.8 =
-* Renamed the main plugin class to start with the exact plugin prefix expected by WordPress Coding Standards / Plugin Check.
-* Kept all 1.3.7 hardening changes intact.
+= 1.5.5 =
+* Fixed real signed-cookie Health Check behavior and added a separate bypass-token test.
+* Preserved regex backslashes during settings saves.
+* Added .htaccess diagnostics and stronger write/remove reporting.
+* Split .htaccess logic so filtered URL pre-PHP blocking is only for Strict/Emergency, while XML-RPC blocking remains independent.
+* Implemented compatible cookie-name regex validation, trusted proxy IP handling, and localized admin JS labels.
+* Moved older changelog history to changelog.txt to keep readme.txt compact.
 
-= 1.3.7 =
-* Added update-time database schema migration, multisite-aware lifecycle cleanup, signed-cookie-only server rule generation, and Nginx internal-data deny snippets.
+= 1.5.4 =
+* Hardened .htaccess write/remove handling with a local filesystem fallback for hosts where WP_Filesystem cannot update the root .htaccess file.
 
-= 1.3.6 =
-* Added public-root compatibility using get_home_path(), hardened Cloudflare expressions, clarified best-effort rate limits, removed regex suppression, and improved filesystem helper usage.
+= 1.5.3 =
+* Fixed stale .htaccess cleanup so Cookie modes remove managed pre-PHP filter blocks during save and manual rewrite actions.
 
-= 1.3.5 =
-* Made Monitor mode neutral, improved server rule generation, added GET-based health checks, decoupled Auto Emergency from event logging, and hardened NDJSON logging.
-
-= 1.3.4 =
-* Guarded manual .htaccess rewrites in safe modes, added health-check test paths, hardened rule generator safe-mode output, and improved uninstall warnings.
-
-= 1.3.3 =
-* Hardened Monitor mode so it does not block filtered traffic, XML-RPC, or rate-limit by default.
-* Reworked rate limiting to use short-lived WordPress transients/object cache counters instead of JSON file counters.
-* Added event-log sampling and emergency-mode per-request log suppression to reduce database pressure during attacks.
-* Made Health Check mode-aware and stricter.
-* Moved backups and NDJSON events outside public uploads.
-* Added optional direct canonical tag output toggle.
-* Updated managed .htaccess/robots.txt markers while preserving legacy marker cleanup.
-
-= 1.3.2 =
-* Fixed Plugin Check errors around translator comments and CSV output context.
-
-= 1.3.1 =
-* Renamed plugin and slug to avoid restricted/trademarked terms at the beginning of the name.
-* Hardened SQL preparation, filesystem operations, nonce/sanitize handling, and readme metadata.
-
-= 1.3.0 =
-* Added event logging, dashboard stats, signed cookies, bot verification, complexity scoring, rate limiting, emergency mode, rule generators, health checks, and rollback.
+See changelog.txt for older release history.
 
 == Upgrade Notice ==
 
-= 1.4.1 =
-Fixes the main class name to use a PascalCase plugin-prefix format expected by WordPress Coding Standards / Plugin Check.
+= 1.5.8 =
+Fixes Plugin Check findings for translation loading, POST helper input handling, and .htaccess diagnostics.
 
-= 1.4.0 =
-Use this version for stricter Cloudflare query/cookie matching, better Auto Emergency detection in Monitor mode, and emergency server rules aligned with configured query keys.
+= 1.5.7 =
+Refines the admin settings UI by removing extra helper text and keeping the save button visible outside collapsed sections.
 
-= 1.3.9 =
-Stabilizes server/CDN cookie-name rules for daily cookie rotation and expands generated Cloudflare query matching for configured expensive query keys.
+= 1.5.6 =
+Fixes Persian admin translation text that displayed a literal Unicode escape sequence instead of proper half-space characters.
 
-= 1.3.8 =
-Renamed the main plugin class to start with the exact plugin prefix expected by WordPress Coding Standards / Plugin Check.
+= 1.5.5 =
+Fixes Health Check cookie tests, regex input handling, .htaccess diagnostics, XML-RPC rule splitting, trusted proxy IP handling, JS labels, and readme size.
 
-= 1.3.7 =
-Adds update-time database schema migration, multisite-aware lifecycle cleanup, signed-cookie-only server rule generation, and Nginx internal-data deny snippets.
+= 1.5.4 =
+Hardened .htaccess write/remove handling with a local fallback for hosts where WP_Filesystem cannot update the root .htaccess file.
 
-= 1.3.6 =
-Use this version for public-root compatibility, tighter Cloudflare expressions, and clearer best-effort rate-limit documentation.
-
-= 1.3.5 =
-Use this version for neutral Monitor mode, mode-aware server rules, GET-based health checks, and better Auto Emergency behavior.
+= 1.5.3 =
+Fixes cleanup of stale .htaccess filter blocks when Cookie modes are active.

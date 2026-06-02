@@ -1,0 +1,1216 @@
+msgid ""
+msgstr "Project-Id-Version: Filter Guard for WooCommerce 1.5.8\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-02 06:30+0000\n"
+"PO-Revision-Date: 2026-06-02 08:10+0000\n"
+"Last-Translator: Hamidreza Rezaei\n"
+"Language-Team: Persian\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: ChatGPT\n"
+"X-Domain: filter-guard-for-woocommerce\n"
+""
+
+#: filter-guard-for-woocommerce.php:270
+msgid "Off - no SEO or protection changes"
+msgstr "خاموش - بدون تغییر در سئو یا محافظت"
+
+#: filter-guard-for-woocommerce.php:271
+msgid "SEO Soft Mode - noindex/canonical with optional high-score redirect/block"
+msgstr "حالت سئوی نرم - noindex/canonical همراه با امکان ریدایرکت یا بلاک برای امتیازهای بالا"
+
+#: filter-guard-for-woocommerce.php:272
+msgid "Monitor Only - log and score only, no SEO tags/cookies/robots/blocking"
+msgstr "فقط پایش - فقط ثبت و امتیازدهی، بدون تگ سئو، کوکی، robots یا بلاک"
+
+#: filter-guard-for-woocommerce.php:273
+msgid "Protection - require signed human cookie"
+msgstr "محافظت - نیازمند کوکی انسانی امضاشده"
+
+#: filter-guard-for-woocommerce.php:274
+msgid "Protection - require signed human cookie + internal referer"
+msgstr "محافظت - نیازمند کوکی انسانی امضاشده + ارجاع‌دهنده داخلی"
+
+#: filter-guard-for-woocommerce.php:275
+msgid "Strict - block protected filtered URLs except allowlists"
+msgstr "سخت‌گیرانه - بلاک کردن URLهای فیلترشده محافظت‌شده به‌جز موارد مجاز"
+
+#: filter-guard-for-woocommerce.php:276
+msgid "Emergency - lightweight block for protected filtered URLs"
+msgstr "اضطراری - بلاک سبک برای URLهای فیلترشده محافظت‌شده"
+
+#: filter-guard-for-woocommerce.php:749 filter-guard-for-woocommerce.php:749 filter-guard-for-woocommerce.php:1012
+msgid "Filter Guard for WooCommerce"
+msgstr "محافظ فیلتر برای ووکامرس"
+
+#: filter-guard-for-woocommerce.php:770
+msgid "Blocking .htaccess rules are not written while protection mode is Off, Monitor, or SEO Soft Mode. Switch to Cookie, Cookie + Referer, Strict, or Emergency first."
+msgstr "قوانین بلاک .htaccess در حالت خاموش، پایش یا سئوی نرم نوشته نمی‌شوند. ابتدا به حالت کوکی، کوکی + Referer، سخت‌گیرانه یا اضطراری تغییر دهید."
+
+#: filter-guard-for-woocommerce.php:774
+msgid ".htaccess guard written."
+msgstr "محافظ .htaccess نوشته شد."
+
+#: filter-guard-for-woocommerce.php:774
+msgid "Could not write .htaccess guard. Validate regex settings and file permissions."
+msgstr "امکان نوشتن محافظ .htaccess وجود نداشت. تنظیمات regex و دسترسی فایل‌ها را بررسی کنید."
+
+#: filter-guard-for-woocommerce.php:779
+msgid ".htaccess guard removed."
+msgstr "محافظ .htaccess حذف شد."
+
+#: filter-guard-for-woocommerce.php:779
+msgid "Could not remove .htaccess guard. Check file permissions."
+msgstr "امکان حذف محافظ .htaccess وجود نداشت. دسترسی فایل‌ها را بررسی کنید."
+
+#: filter-guard-for-woocommerce.php:785
+msgid "robots.txt rules are not written while protection mode is Off or Monitor. Use SEO Soft Mode or a blocking mode first."
+msgstr "قوانین robots.txt در حالت خاموش یا پایش نوشته نمی‌شوند. ابتدا از حالت سئوی نرم یا یکی از حالت‌های بلاک استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:789
+msgid "robots.txt rules written."
+msgstr "قوانین robots.txt نوشته شد."
+
+#: filter-guard-for-woocommerce.php:789
+msgid "Could not write robots.txt rules. Check file permissions."
+msgstr "امکان نوشتن قوانین robots.txt وجود نداشت. دسترسی فایل‌ها را بررسی کنید."
+
+#: filter-guard-for-woocommerce.php:794
+msgid "robots.txt rules removed."
+msgstr "قوانین robots.txt حذف شد."
+
+#: filter-guard-for-woocommerce.php:794
+msgid "Could not remove robots.txt rules. Check file permissions."
+msgstr "امکان حذف قوانین robots.txt وجود نداشت. دسترسی فایل‌ها را بررسی کنید."
+
+#: filter-guard-for-woocommerce.php:802
+msgid "Self-tests completed successfully."
+msgstr "خودآزمایی‌ها با موفقیت کامل شدند."
+
+#: filter-guard-for-woocommerce.php:802
+msgid "Self-tests completed, but at least one policy check failed. Review the Health Check table before enabling stricter modes."
+msgstr "خودآزمایی‌ها کامل شدند، اما حداقل یک بررسی سیاست ناموفق بود. پیش از فعال‌سازی حالت‌های سخت‌گیرانه‌تر، جدول بررسی سلامت را مرور کنید."
+
+#: filter-guard-for-woocommerce.php:807
+msgid "Latest backup restored."
+msgstr "آخرین نسخه پشتیبان بازیابی شد."
+
+#: filter-guard-for-woocommerce.php:807
+msgid "Could not restore latest backup."
+msgstr "امکان بازیابی آخرین نسخه پشتیبان وجود نداشت."
+
+#: filter-guard-for-woocommerce.php:813
+msgid "Cookie secret rotated. Existing human cookies are invalidated."
+msgstr "راز کوکی تغییر کرد. کوکی‌های انسانی موجود نامعتبر شدند."
+
+#: filter-guard-for-woocommerce.php:935
+msgid "Settings saved and rules regenerated."
+msgstr "تنظیمات ذخیره و قوانین دوباره تولید شدند."
+
+#: filter-guard-for-woocommerce.php:935
+msgid "Settings saved, but at least one filesystem operation failed. Check file permissions or remove/rewrite rules manually."
+msgstr "تنظیمات ذخیره شد، اما حداقل یک عملیات فایل‌سیستم ناموفق بود. دسترسی فایل‌ها را بررسی کنید یا قوانین را دستی حذف/بازنویسی کنید."
+
+#: filter-guard-for-woocommerce.php:1020
+msgid "Live Dashboard"
+msgstr "داشبورد زنده"
+
+#: filter-guard-for-woocommerce.php:1022
+msgid "PHP blocked 10m"
+msgstr "بلاک‌شده PHP در ۱۰ دقیقه"
+
+#: filter-guard-for-woocommerce.php:1023
+msgid "PHP allowed 10m"
+msgstr "مجاز PHP در ۱۰ دقیقه"
+
+#: filter-guard-for-woocommerce.php:1024
+msgid "PHP distinct IPs 10m"
+msgstr "IPهای یکتای PHP در ۱۰ دقیقه"
+
+#: filter-guard-for-woocommerce.php:1025
+msgid "Mode"
+msgstr "حالت"
+
+#: filter-guard-for-woocommerce.php:1026
+msgid "Server guard"
+msgstr "محافظ سرور"
+
+#: filter-guard-for-woocommerce.php:1026
+msgid "Pre-PHP active"
+msgstr "فعال پیش از PHP"
+
+#: filter-guard-for-woocommerce.php:1026
+msgid "PHP only / inactive"
+msgstr "فقط PHP / غیرفعال"
+
+#: filter-guard-for-woocommerce.php:1027
+msgid "Average score 10m"
+msgstr "میانگین امتیاز ۱۰ دقیقه"
+
+#: filter-guard-for-woocommerce.php:1059
+msgid "Quick operational snapshot for the last 10 minutes. These counters are PHP-level event-log counters. If Apache/LiteSpeed .htaccess guard blocks a request before WordPress loads, the request is protected but cannot be counted here; use server access logs for those pre-PHP hits."
+msgstr "نمای عملیاتی سریع برای ۱۰ دقیقه گذشته. این شمارنده‌ها مربوط به رخدادهای سطح PHP هستند. اگر محافظ .htaccess در Apache/LiteSpeed درخواست را پیش از بارگذاری وردپرس بلاک کند، درخواست محافظت شده اما اینجا قابل شمارش نیست؛ برای آن بازدیدهای پیش از PHP از لاگ دسترسی سرور استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:1060
+msgid "Shows the latest internal health checks. These tests verify the homepage, the configured WooCommerce shop/category test path, protected filtered URLs, cookie behavior, XML-RPC blocking, and robots.txt availability."
+msgstr "آخرین بررسی‌های سلامت داخلی را نشان می‌دهد. این تست‌ها صفحه اصلی، مسیر تست فروشگاه/دسته‌بندی ووکامرس، URLهای فیلترشده محافظت‌شده، رفتار کوکی، بلاک XML-RPC و دسترس‌پذیری robots.txt را بررسی می‌کنند."
+
+#: filter-guard-for-woocommerce.php:1061
+msgid "Recent allow/block/noindex/mode/test events. This section helps you confirm which URLs matched the policy, which action was taken, and whether traffic looks like normal filtering or automated crawling."
+msgstr "رخدادهای اخیر مجاز/بلاک/noindex/حالت/تست. این بخش کمک می‌کند ببینید کدام URLها با سیاست منطبق شده‌اند، چه اقدامی انجام شده و آیا ترافیک شبیه فیلتر عادی است یا خزیدن خودکار."
+
+#: filter-guard-for-woocommerce.php:1062
+msgid "Controls the main protection policy and the server-level guard. Start with Monitor Only to learn traffic patterns, use SEO Soft for indexing control, use Cookie mode for normal protection, and reserve Cookie + Referer, Strict, or Emergency for active floods."
+msgstr "سیاست اصلی محافظت و محافظ سطح سرور را کنترل می‌کند. برای شناخت الگوی ترافیک با فقط پایش شروع کنید، برای کنترل ایندکس از سئوی نرم، برای محافظت عادی از حالت کوکی و برای حملات فعال از کوکی + Referer، سخت‌گیرانه یا اضطراری استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:1063
+msgid "Defines how expensive a filtered archive URL is. More filter parameters, longer queries, and configured query keys increase the score. The score decides when cookies are required, when requests are blocked, and when emergency behavior should apply."
+msgstr "مشخص می‌کند یک URL آرشیو فیلترشده چقدر پرهزینه است. تعداد پارامترهای فیلتر، طول query و کلیدهای تنظیم‌شده امتیاز را افزایش می‌دهند. امتیاز تعیین می‌کند چه زمانی کوکی لازم است، درخواست بلاک می‌شود یا رفتار اضطراری اعمال می‌گردد."
+
+#: filter-guard-for-woocommerce.php:1064
+msgid "Configures the lightweight first-party human cookie. Signed and rotating cookies make simple bot replay harder while keeping real visitors fast after their first valid page view. Very strict binding can affect visitors behind changing networks."
+msgstr "کوکی انسانی سبک و first-party را تنظیم می‌کند. کوکی‌های امضاشده و چرخشی بازپخش ساده ربات‌ها را سخت‌تر می‌کنند و بازدیدکنندگان واقعی پس از اولین صفحه معتبر سریع‌تر عبور می‌کنند. اتصال بسیار سخت‌گیرانه می‌تواند کاربران پشت شبکه‌های متغیر را تحت تأثیر قرار دهد."
+
+#: filter-guard-for-woocommerce.php:1065
+msgid "Controls what the plugin records and how much personally identifiable data is stored. Hash or anonymize IPs for privacy, keep retention short, and enable sampling to avoid database pressure during large crawl floods."
+msgstr "کنترل می‌کند افزونه چه چیزهایی را ثبت کند و چه مقدار داده قابل شناسایی ذخیره شود. برای حریم خصوصی IPها را هش یا ناشناس کنید، زمان نگهداری را کوتاه بگیرید و برای جلوگیری از فشار دیتابیس هنگام crawl flood بزرگ نمونه‌برداری را فعال کنید."
+
+#: filter-guard-for-woocommerce.php:1066
+msgid "Automatically escalates protection when traffic volume crosses configured thresholds, then returns to the base recovery mode after the site is quiet. Tune thresholds carefully so seasonal traffic spikes do not trigger aggressive blocking."
+msgstr "وقتی حجم ترافیک از آستانه‌های تنظیم‌شده عبور کند، محافظت را خودکار تشدید می‌کند و پس از آرام شدن سایت به حالت بازیابی پایه برمی‌گردد. آستانه‌ها را با دقت تنظیم کنید تا جهش‌های فصلی باعث بلاک تهاجمی نشوند."
+
+#: filter-guard-for-woocommerce.php:1067
+msgid "Optional PHP-level rate limiting using WordPress transients or object cache. It is useful as a safety net, but high-volume attacks are better handled with .htaccess, Nginx, Cloudflare, or other edge/server rules."
+msgstr "محدودسازی نرخ اختیاری در سطح PHP با transient یا object cache وردپرس. این گزینه به‌عنوان شبکه ایمنی مفید است، اما حملات سنگین بهتر است با .htaccess، Nginx، Cloudflare یا قوانین لبه/سرور مدیریت شوند."
+
+#: filter-guard-for-woocommerce.php:1068
+msgid "Validates declared search bots before trusting their user-agent names. This protects against fake Googlebot/Bingbot strings while allowing verified crawlers to receive gentler handling where appropriate."
+msgstr "ربات‌های جست‌وجوی اعلام‌شده را پیش از اعتماد به نام User-Agent بررسی می‌کند. این کار در برابر Googlebot/Bingbot جعلی محافظت می‌کند و به خزنده‌های تأییدشده اجازه می‌دهد در صورت مناسب، برخورد ملایم‌تری دریافت کنند."
+
+#: filter-guard-for-woocommerce.php:1069
+msgid "Safety controls for rule deployment and cleanup. Health checks catch broken server rules after saving; rollback can restore the latest backup; uninstall cleanup controls whether generated files are removed when deleting the plugin."
+msgstr "کنترل‌های ایمنی برای استقرار و پاک‌سازی قوانین. بررسی سلامت پس از ذخیره، قوانین خراب سرور را تشخیص می‌دهد؛ rollback می‌تواند آخرین پشتیبان را بازیابی کند؛ پاک‌سازی هنگام حذف مشخص می‌کند فایل‌های تولیدشده حذف شوند یا نه."
+
+#: filter-guard-for-woocommerce.php:1070
+msgid "Copy-ready Apache/LiteSpeed, Nginx, and Cloudflare rules for environments where automatic file writing is not possible or where edge blocking is preferred. Apply only the rule set that matches your server/CDN."
+msgstr "قوانین آماده کپی برای Apache/LiteSpeed، Nginx و Cloudflare برای محیط‌هایی که نوشتن خودکار فایل ممکن نیست یا بلاک در لبه ترجیح دارد. فقط مجموعه قانونی را اعمال کنید که با سرور/CDN شما سازگار است."
+
+#: filter-guard-for-woocommerce.php:1071
+msgid "Lists backups created before the plugin changes managed files such as .htaccess, robots.txt, or blocked-light.html. Use these backups to recover quickly from a bad rule deployment."
+msgstr "پشتیبان‌هایی را فهرست می‌کند که پیش از تغییر فایل‌های مدیریت‌شده مانند .htaccess، robots.txt یا blocked-light.html ساخته شده‌اند. از این پشتیبان‌ها برای بازیابی سریع پس از استقرار قانون اشتباه استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:1072
+msgid "Manual maintenance tools for tests, rewriting/removing managed rules, restoring the latest backup, rotating cookie secrets, and exporting event logs. Use destructive actions carefully on production sites."
+msgstr "ابزارهای نگهداری دستی برای تست‌ها، بازنویسی/حذف قوانین مدیریت‌شده، بازیابی آخرین پشتیبان، چرخش راز کوکی و خروجی گرفتن از لاگ رخدادها. عملیات مخرب را در سایت تولیدی با احتیاط انجام دهید."
+
+#: filter-guard-for-woocommerce.php:1073
+msgid "Main behavior switch. Monitor Only is safest for observation; SEO Soft adds indexing controls; Cookie mode protects filtered URLs while allowing real visitors; Cookie + Referer is stricter; Strict/Emergency are high-impact blocking modes."
+msgstr "کلید اصلی رفتار افزونه. فقط پایش امن‌ترین حالت برای مشاهده است؛ سئوی نرم کنترل ایندکس را اضافه می‌کند؛ حالت کوکی از URLهای فیلترشده محافظت می‌کند و کاربران واقعی را عبور می‌دهد؛ کوکی + Referer سخت‌گیرانه‌تر است؛ سخت‌گیرانه/اضطراری حالت‌های بلاک پراثر هستند."
+
+#: filter-guard-for-woocommerce.php:1074
+msgid "The mode Auto Emergency returns to after the recovery period. Choose a stable everyday mode such as Monitor, SEO Soft, or Cookie; do not use Emergency as the recovery target."
+msgstr "حالتی که Auto Emergency پس از دوره بازیابی به آن برمی‌گردد. یک حالت پایدار روزمره مانند پایش، سئوی نرم یا کوکی انتخاب کنید؛ اضطراری را هدف بازیابی قرار ندهید."
+
+#: filter-guard-for-woocommerce.php:1075
+msgid "When enabled on Apache/LiteSpeed, the plugin writes rewrite rules that block expensive filtered URLs before WordPress/PHP loads. This is faster than PHP blocking but cannot honor WordPress role allowlists."
+msgstr "وقتی در Apache/LiteSpeed فعال باشد، افزونه قوانین rewrite می‌نویسد تا URLهای فیلترشده پرهزینه پیش از بارگذاری WordPress/PHP بلاک شوند. این روش از بلاک PHP سریع‌تر است اما نمی‌تواند فهرست نقش‌های مجاز وردپرس را رعایت کند."
+
+#: filter-guard-for-woocommerce.php:1076
+msgid "Blocks xmlrpc.php at PHP and managed .htaccess levels. Enable this when XML-RPC is not needed for Jetpack, mobile publishing, or legacy integrations."
+msgstr "xmlrpc.php را در سطح PHP و .htaccess مدیریت‌شده بلاک می‌کند. زمانی فعال کنید که XML-RPC برای Jetpack، انتشار موبایلی یا یکپارچه‌سازی‌های قدیمی لازم نیست."
+
+#: filter-guard-for-woocommerce.php:1077
+msgid "HTTP response used for blocked requests. 403 clearly means forbidden; 404 hides the route from basic bots. Keep behavior consistent with your SEO and monitoring expectations."
+msgstr "پاسخ HTTP استفاده‌شده برای درخواست‌های بلاک‌شده. 403 به‌روشنی یعنی ممنوع؛ 404 مسیر را از ربات‌های ساده پنهان می‌کند. رفتار را با انتظارات سئو و مانیتورینگ خود هماهنگ نگه دارید."
+
+#: filter-guard-for-woocommerce.php:1078
+msgid "Regular expression for URL paths that should be protected, usually WooCommerce shop/category archives. Keep it narrow, for example product-category and shop paths, so normal pages are not affected."
+msgstr "عبارت منظم برای مسیرهای URL که باید محافظت شوند؛ معمولاً آرشیوهای فروشگاه/دسته‌بندی ووکامرس. آن را محدود نگه دارید، مثلاً مسیرهای product-category و shop، تا صفحات عادی تحت تأثیر قرار نگیرند."
+
+#: filter-guard-for-woocommerce.php:1079
+msgid "Regular expression for expensive query parameter names such as filter_*, query_type_*, price filters, ordering, stock status, and view changes. These keys identify layered-navigation crawl targets."
+msgstr "عبارت منظم برای نام پارامترهای query پرهزینه مانند filter_*، query_type_*، فیلترهای قیمت، مرتب‌سازی، وضعیت موجودی و تغییر نما. این کلیدها اهداف crawl در layered navigation را مشخص می‌کنند."
+
+#: filter-guard-for-woocommerce.php:1080
+msgid "Optional legacy cookie-name compatibility for PHP checks only. Generated server/CDN rules use the current Filter Guard cookie names, and real validation still requires the signed HMAC cookie in PHP."
+msgstr "سازگاری اختیاری با نام کوکی قدیمی فقط برای بررسی‌های PHP. قوانین تولیدشده سرور/CDN از نام کوکی فعلی Filter Guard استفاده می‌کنند و اعتبارسنجی واقعی همچنان نیازمند کوکی HMAC امضاشده در PHP است."
+
+#: filter-guard-for-woocommerce.php:1081
+msgid "IPs or CIDR/range patterns that bypass PHP-level checks. Use only for trusted admins, monitoring systems, or known internal networks. This does not bypass pre-PHP .htaccess blocking."
+msgstr "IPها یا الگوهای CIDR/بازه که بررسی‌های سطح PHP را دور می‌زنند. فقط برای مدیران قابل اعتماد، سیستم‌های پایش یا شبکه‌های داخلی شناخته‌شده استفاده کنید. این گزینه بلاک pre-PHP در .htaccess را دور نمی‌زند."
+
+#: filter-guard-for-woocommerce.php:1082
+msgid "Optional PHP-level bypass for trusted user agents. Keep this very narrow because user-agent strings are easy to spoof unless combined with verified-bot checks."
+msgstr "عبور اختیاری در سطح PHP برای User-Agentهای قابل اعتماد. این گزینه را بسیار محدود نگه دارید، چون رشته‌های User-Agent به‌راحتی جعل می‌شوند مگر اینکه با بررسی ربات تأییدشده ترکیب شوند."
+
+#: filter-guard-for-woocommerce.php:1083
+msgid "Comma-separated WordPress role slugs allowed through PHP-level protection. This is useful for admins/shop managers, but server-level .htaccess rules run before WordPress knows the user role."
+msgstr "اسلاگ نقش‌های وردپرس، جداشده با کاما، که از محافظت سطح PHP عبور می‌کنند. برای مدیران/مدیران فروشگاه مفید است، اما قوانین .htaccess سطح سرور پیش از شناسایی نقش کاربر توسط وردپرس اجرا می‌شوند."
+
+#: filter-guard-for-woocommerce.php:1084
+msgid "Number of filter/query parameters allowed before the URL is considered too complex. Lower values are stricter; higher values allow deeper customer filtering but may increase crawl load."
+msgstr "تعداد پارامترهای فیلتر/query مجاز پیش از اینکه URL بیش از حد پیچیده محسوب شود. مقدار کمتر سخت‌گیرانه‌تر است؛ مقدار بیشتر فیلتر عمیق‌تر برای مشتریان را مجاز می‌کند اما ممکن است بار crawl را افزایش دهد."
+
+#: filter-guard-for-woocommerce.php:1085
+msgid "Maximum full query-string length before extra score is added. Very long query strings often indicate crawler-generated combinations or attack traffic."
+msgstr "حداکثر طول کامل query-string پیش از افزودن امتیاز اضافه. queryهای بسیار طولانی اغلب نشانه ترکیب‌های تولیدشده توسط خزنده یا ترافیک حمله هستند."
+
+#: filter-guard-for-woocommerce.php:1086
+msgid "Score level where the plugin starts requiring a valid human cookie in cookie-based modes. Set below the block score so real users can be challenged before being blocked."
+msgstr "سطح امتیازی که افزونه در حالت‌های مبتنی بر کوکی، کوکی انسانی معتبر را لازم می‌کند. آن را پایین‌تر از امتیاز بلاک تنظیم کنید تا کاربران واقعی پیش از بلاک شدن چالش شوند."
+
+#: filter-guard-for-woocommerce.php:1087
+msgid "Score level where the plugin blocks a request in blocking modes. Increase this if legitimate filter combinations are being blocked; decrease it during severe floods."
+msgstr "سطح امتیازی که افزونه در حالت‌های بلاک، درخواست را بلاک می‌کند. اگر ترکیب‌های فیلتر معتبر بلاک می‌شوند آن را افزایش دهید؛ هنگام flood شدید کاهش دهید."
+
+#: filter-guard-for-woocommerce.php:1088
+msgid "Very high score threshold that marks a request as emergency-level complexity. Use this to catch extreme filter combinations even before volume-based thresholds trigger."
+msgstr "آستانه امتیاز بسیار بالا که درخواست را در سطح پیچیدگی اضطراری علامت‌گذاری می‌کند. از آن برای گرفتن ترکیب‌های فیلتر افراطی حتی پیش از فعال شدن آستانه‌های حجمی استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:1089
+msgid "In SEO Soft Mode, filter URLs up to this score can receive noindex/canonical handling while higher-score URLs can be redirected to a clean URL or blocked, depending on the selected action."
+msgstr "در حالت سئوی نرم، URLهای فیلتر تا این امتیاز می‌توانند noindex/canonical دریافت کنند و URLهای با امتیاز بالاتر بسته به اقدام انتخاب‌شده به URL تمیز ریدایرکت یا بلاک شوند."
+
+#: filter-guard-for-woocommerce.php:1090
+msgid "Sets a lightweight first-party HttpOnly cookie for real visitors. Cookie-based protection depends on this unless another trusted flow sets a compatible cookie."
+msgstr "یک کوکی سبک first-party و HttpOnly برای بازدیدکنندگان واقعی تنظیم می‌کند. محافظت مبتنی بر کوکی به این گزینه وابسته است مگر اینکه جریان قابل اعتماد دیگری کوکی سازگار تنظیم کند."
+
+#: filter-guard-for-woocommerce.php:1091
+msgid "Base name for the human cookie. Keep the default unless you have a naming conflict or need to coordinate with existing server/CDN rules."
+msgstr "نام پایه کوکی انسانی. مقدار پیش‌فرض را نگه دارید مگر اینکه تداخل نام دارید یا باید با قوانین موجود سرور/CDN هماهنگ شوید."
+
+#: filter-guard-for-woocommerce.php:1092
+msgid "Cookie lifetime in seconds. Shorter TTLs reduce replay window; longer TTLs reduce repeat challenges for real shoppers."
+msgstr "طول عمر کوکی برحسب ثانیه. TTL کوتاه‌تر پنجره بازپخش را کاهش می‌دهد؛ TTL طولانی‌تر چالش‌های تکراری برای خریداران واقعی را کمتر می‌کند."
+
+#: filter-guard-for-woocommerce.php:1093
+msgid "Adds HMAC signing, optional daily name rotation, and optional binding to User-Agent or IP prefix. Stronger binding improves abuse resistance but can affect visitors whose browser/network changes frequently."
+msgstr "امضای HMAC، چرخش اختیاری روزانه نام و اتصال اختیاری به User-Agent یا پیشوند IP را اضافه می‌کند. اتصال قوی‌تر مقاومت در برابر سوءاستفاده را بهتر می‌کند اما می‌تواند روی بازدیدکنندگانی که مرورگر/شبکه آن‌ها مرتب تغییر می‌کند اثر بگذارد."
+
+#: filter-guard-for-woocommerce.php:1094
+msgid "Enables recording of important plugin events such as blocked requests, allowed filtered requests, noindex decisions, mode changes, and self-tests."
+msgstr "ثبت رخدادهای مهم افزونه مانند درخواست‌های بلاک‌شده، درخواست‌های فیلترشده مجاز، تصمیم‌های noindex، تغییر حالت و خودآزمایی‌ها را فعال می‌کند."
+
+#: filter-guard-for-woocommerce.php:1095
+msgid "Where events are stored. Database is easiest to review in WordPress; NDJSON file is useful for server-side analysis; Both gives redundancy but writes more data."
+msgstr "محل ذخیره رخدادها. دیتابیس برای بررسی در وردپرس ساده‌تر است؛ فایل NDJSON برای تحلیل سمت سرور مفید است؛ هر دو افزونگی می‌دهد اما داده بیشتری می‌نویسد."
+
+#: filter-guard-for-woocommerce.php:1096
+msgid "Controls IP privacy in logs. Hash only is privacy-friendly, anonymized keeps partial troubleshooting value, and full IP should be used only when you need exact forensic data."
+msgstr "حریم خصوصی IP در لاگ‌ها را کنترل می‌کند. فقط هش برای حریم خصوصی مناسب‌تر است، ناشناس‌سازی مقدار کمی برای عیب‌یابی حفظ می‌کند و IP کامل فقط زمانی استفاده شود که به داده دقیق forensic نیاز دارید."
+
+#: filter-guard-for-woocommerce.php:1097
+msgid "Number of days to keep logs before cleanup. Short retention reduces database size and privacy exposure; longer retention helps investigate recurring crawl patterns."
+msgstr "تعداد روزهای نگهداری لاگ‌ها پیش از پاک‌سازی. نگهداری کوتاه حجم دیتابیس و ریسک حریم خصوصی را کاهش می‌دهد؛ نگهداری طولانی‌تر برای بررسی الگوهای crawl تکراری مفید است."
+
+#: filter-guard-for-woocommerce.php:1098
+msgid "Sampling rule for high traffic. After the configured events-per-minute threshold, the plugin records only one out of every N repetitive events while counters still drive protection decisions."
+msgstr "قانون نمونه‌برداری برای ترافیک بالا. پس از آستانه رخداد در دقیقه تنظیم‌شده، افزونه فقط یکی از هر N رخداد تکراری را ثبت می‌کند، در حالی که شمارنده‌ها همچنان تصمیم‌های محافظتی را هدایت می‌کنند."
+
+#: filter-guard-for-woocommerce.php:1099
+msgid "Reduces repetitive per-request logging while Emergency mode is active. This protects the database and filesystem when the site is already under heavy crawl pressure."
+msgstr "هنگام فعال بودن حالت اضطراری، لاگ‌نویسی تکراری برای هر درخواست را کاهش می‌دهد. این کار وقتی سایت زیر فشار crawl سنگین است، از دیتابیس و فایل‌سیستم محافظت می‌کند."
+
+#: filter-guard-for-woocommerce.php:1100
+msgid "Turns on automatic escalation to Strict/Emergency based on request volume and IP diversity. Keep disabled if you prefer manual mode changes only."
+msgstr "تشدید خودکار به حالت سخت‌گیرانه/اضطراری را بر اساس حجم درخواست و تنوع IP فعال می‌کند. اگر فقط تغییر دستی حالت را ترجیح می‌دهید، آن را غیرفعال نگه دارید."
+
+#: filter-guard-for-woocommerce.php:1101
+msgid "Rolling time window used to count filtered and blocked requests for Auto Emergency decisions. Shorter windows react faster; longer windows are smoother but slower."
+msgstr "پنجره زمانی لغزان برای شمارش درخواست‌های فیلترشده و بلاک‌شده در تصمیم‌های Auto Emergency. پنجره کوتاه‌تر سریع‌تر واکنش می‌دهد؛ پنجره بلندتر نرم‌تر اما کندتر است."
+
+#: filter-guard-for-woocommerce.php:1102
+msgid "Number of matched requests within the window required to move into Strict mode. Set above normal peak traffic but below flood levels."
+msgstr "تعداد درخواست‌های منطبق در پنجره زمانی که برای ورود به حالت سخت‌گیرانه لازم است. آن را بالاتر از اوج ترافیک عادی و پایین‌تر از سطح flood تنظیم کنید."
+
+#: filter-guard-for-woocommerce.php:1103
+msgid "Number of matched or blocked requests within the window required to move into Emergency mode. This should be higher than the Strict threshold."
+msgstr "تعداد درخواست‌های منطبق یا بلاک‌شده در پنجره زمانی که برای ورود به حالت اضطراری لازم است. این مقدار باید بالاتر از آستانه سخت‌گیرانه باشد."
+
+#: filter-guard-for-woocommerce.php:1104
+msgid "Minimum number of different IPs seen in the window before emergency escalation. Helps distinguish distributed crawl floods from one aggressive visitor or tool."
+msgstr "حداقل تعداد IPهای متفاوت دیده‌شده در پنجره پیش از تشدید اضطراری. به تفکیک crawl flood توزیع‌شده از یک بازدیدکننده یا ابزار تهاجمی کمک می‌کند."
+
+#: filter-guard-for-woocommerce.php:1105
+msgid "Quiet period before Auto Emergency returns to the base recovery mode. Increase it if attacks come in waves; decrease it if you want faster recovery."
+msgstr "دوره آرامش پیش از بازگشت Auto Emergency به حالت بازیابی پایه. اگر حملات موجی هستند آن را افزایش دهید؛ اگر بازیابی سریع‌تر می‌خواهید کاهش دهید."
+
+#: filter-guard-for-woocommerce.php:1106
+msgid "Enables PHP-level rate limits. Useful for moderate abuse, but not a replacement for server/CDN protection during high-volume floods because WordPress must still load."
+msgstr "محدودسازی نرخ در سطح PHP را فعال می‌کند. برای سوءاستفاده متوسط مفید است، اما هنگام flood سنگین جایگزین محافظت سرور/CDN نیست، چون وردپرس همچنان باید بارگذاری شود."
+
+#: filter-guard-for-woocommerce.php:1107
+msgid "Maximum matching requests from one IP within the rate-limit window before temporary blocking starts."
+msgstr "حداکثر درخواست‌های منطبق از یک IP در پنجره rate limit پیش از شروع بلاک موقت."
+
+#: filter-guard-for-woocommerce.php:1108
+msgid "Maximum matching requests from the same approximate network range within the window. Helps slow small bot clusters that rotate nearby IPs."
+msgstr "حداکثر درخواست‌های منطبق از یک بازه شبکه تقریبی در همان پنجره. به کند کردن خوشه‌های کوچک ربات که IPهای نزدیک را می‌چرخانند کمک می‌کند."
+
+#: filter-guard-for-woocommerce.php:1109
+msgid "Length of the rate-limit counting window in seconds. Shorter windows are more responsive; longer windows are more tolerant but less immediate."
+msgstr "طول پنجره شمارش rate limit بر حسب ثانیه. پنجره کوتاه‌تر پاسخ‌گوتر است؛ پنجره بلندتر تحمل بیشتری دارد اما فوری نیست."
+
+#: filter-guard-for-woocommerce.php:1110
+msgid "Temporary block duration after a rate limit is exceeded. Keep it long enough to cool down abuse but not so long that accidental blocks persist for hours."
+msgstr "مدت بلاک موقت پس از عبور از rate limit. آن را به‌اندازه‌ای طولانی بگذارید که سوءاستفاده فروکش کند، اما نه آن‌قدر طولانی که بلاک‌های تصادفی ساعت‌ها باقی بمانند."
+
+#: filter-guard-for-woocommerce.php:1111
+msgid "Select which search bot families to verify and whether failed verification should be blocked. Verification is important because bot user-agent names can be forged."
+msgstr "انتخاب کنید کدام خانواده‌های ربات جست‌وجو بررسی شوند و آیا شکست بررسی باید بلاک شود یا نه. بررسی مهم است، چون نام‌های User-Agent ربات‌ها قابل جعل هستند."
+
+#: filter-guard-for-woocommerce.php:1112
+msgid "How long successful bot verification is cached. Higher values reduce DNS/verification overhead; lower values refresh identity checks more often."
+msgstr "مدت کش شدن بررسی موفق ربات. مقدار بالاتر هزینه DNS/verification را کاهش می‌دهد؛ مقدار پایین‌تر بررسی هویت را بیشتر تازه‌سازی می‌کند."
+
+#: filter-guard-for-woocommerce.php:1113
+msgid "Maximum complexity score allowed for verified bots before normal protection applies. Use this to keep legitimate crawlers from exploring extremely expensive filter combinations."
+msgstr "حداکثر امتیاز پیچیدگی مجاز برای ربات‌های تأییدشده پیش از اعمال محافظت عادی. از این گزینه برای جلوگیری از کاوش ترکیب‌های فیلتر بسیار پرهزینه توسط خزنده‌های معتبر استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:1114
+msgid "Runs self-tests after writing managed files. If rollback is enabled and tests fail, the plugin restores the latest backup to avoid leaving broken blocking rules active."
+msgstr "پس از نوشتن فایل‌های مدیریت‌شده خودآزمایی اجرا می‌کند. اگر rollback فعال باشد و تست‌ها ناموفق شوند، افزونه برای جلوگیری از فعال ماندن قوانین خراب، آخرین پشتیبان را بازیابی می‌کند."
+
+#: filter-guard-for-woocommerce.php:1115
+msgid "Clean WooCommerce shop or category path used for tests before filter parameters are added. It must return 200 so the plugin can distinguish real rule problems from missing pages."
+msgstr "مسیر تمیز فروشگاه یا دسته‌بندی ووکامرس که برای تست‌ها پیش از افزودن پارامترهای فیلتر استفاده می‌شود. باید 200 برگرداند تا افزونه بتواند مشکل واقعی قوانین را از صفحه گم‌شده تشخیص دهد."
+
+#: filter-guard-for-woocommerce.php:1116
+msgid "Controls cleanup on plugin deletion. Enable when you want .htaccess, robots.txt, and blocked-light.html changes removed automatically during uninstall."
+msgstr "پاک‌سازی هنگام حذف افزونه را کنترل می‌کند. زمانی فعال کنید که می‌خواهید تغییرات .htaccess، robots.txt و blocked-light.html هنگام uninstall به‌صورت خودکار حذف شوند."
+
+#: filter-guard-for-woocommerce.php:1137
+msgid "Help: %s"
+msgstr "راهنما: %s"
+
+#: filter-guard-for-woocommerce.php:1137
+msgid "More information"
+msgstr "اطلاعات بیشتر"
+
+#: filter-guard-for-woocommerce.php:1194
+msgid "Last Health Check / Self-Test"
+msgstr "آخرین بررسی سلامت / خودآزمایی"
+
+#: filter-guard-for-woocommerce.php:1210
+msgid "Recent Events"
+msgstr "رخدادهای اخیر"
+
+#: filter-guard-for-woocommerce.php:1242
+msgid "Protection Settings"
+msgstr "تنظیمات محافظت"
+
+#: filter-guard-for-woocommerce.php:1244 filter-guard-for-woocommerce.php:1033
+msgid "Protection mode"
+msgstr "حالت محافظت"
+
+#: filter-guard-for-woocommerce.php:1245
+msgid "Base recovery mode"
+msgstr "حالت بازیابی پایه"
+
+#: filter-guard-for-woocommerce.php:1246
+msgid "Manage .htaccess guard"
+msgstr "مدیریت محافظ .htaccess"
+
+#: filter-guard-for-woocommerce.php:1247
+msgid "Block XML-RPC"
+msgstr "بلاک XML-RPC"
+
+#: filter-guard-for-woocommerce.php:1248
+msgid "Block response"
+msgstr "پاسخ بلاک"
+
+#: filter-guard-for-woocommerce.php:1249
+msgid "Protected path regex"
+msgstr "Regex مسیر محافظت‌شده"
+
+#: filter-guard-for-woocommerce.php:1250
+msgid "Query key regex"
+msgstr "Regex کلیدهای query"
+
+#: filter-guard-for-woocommerce.php:1251
+msgid "Legacy compatible cookie regex"
+msgstr "Regex کوکی سازگار قدیمی"
+
+#: filter-guard-for-woocommerce.php:1252
+msgid "Allowlisted IPs"
+msgstr "IPهای مجاز"
+
+#: filter-guard-for-woocommerce.php:1253
+msgid "Allow User-Agent regex"
+msgstr "Regex User-Agent مجاز"
+
+#: filter-guard-for-woocommerce.php:1254
+msgid "Allow roles"
+msgstr "نقش‌های مجاز"
+
+#: filter-guard-for-woocommerce.php:1257
+msgid "Query Complexity Scoring"
+msgstr "امتیازدهی پیچیدگی query"
+
+#: filter-guard-for-woocommerce.php:1259
+msgid "Max filter/query params"
+msgstr "حداکثر پارامتر فیلتر/query"
+
+#: filter-guard-for-woocommerce.php:1260
+msgid "Max query length"
+msgstr "حداکثر طول query"
+
+#: filter-guard-for-woocommerce.php:1261
+msgid "Require cookie at score"
+msgstr "نیاز به کوکی در امتیاز"
+
+#: filter-guard-for-woocommerce.php:1262
+msgid "Block at score"
+msgstr "بلاک در امتیاز"
+
+#: filter-guard-for-woocommerce.php:1263
+msgid "Emergency score"
+msgstr "امتیاز اضطراری"
+
+#: filter-guard-for-woocommerce.php:1264
+msgid "SEO Soft max score"
+msgstr "حداکثر امتیاز سئوی نرم"
+
+#: filter-guard-for-woocommerce.php:1267
+msgid "Signed / Rotating Human Cookie"
+msgstr "کوکی انسانی امضاشده / چرخشی"
+
+#: filter-guard-for-woocommerce.php:1269
+msgid "Set human cookie"
+msgstr "تنظیم کوکی انسانی"
+
+#: filter-guard-for-woocommerce.php:1270
+msgid "Cookie base name"
+msgstr "نام پایه کوکی"
+
+#: filter-guard-for-woocommerce.php:1271
+msgid "Cookie TTL seconds"
+msgstr "TTL کوکی برحسب ثانیه"
+
+#: filter-guard-for-woocommerce.php:1272
+msgid "Cookie hardening"
+msgstr "سخت‌سازی کوکی"
+
+#: filter-guard-for-woocommerce.php:1275
+msgid "Event Log / Privacy"
+msgstr "لاگ رخداد / حریم خصوصی"
+
+#: filter-guard-for-woocommerce.php:1277
+msgid "Enable event log"
+msgstr "فعال‌سازی لاگ رخداد"
+
+#: filter-guard-for-woocommerce.php:1278
+msgid "Storage"
+msgstr "ذخیره‌سازی"
+
+#: filter-guard-for-woocommerce.php:1279
+msgid "IP logging mode"
+msgstr "حالت لاگ IP"
+
+#: filter-guard-for-woocommerce.php:1280
+msgid "Retention days"
+msgstr "روزهای نگهداری"
+
+#: filter-guard-for-woocommerce.php:1281
+msgid "High-traffic log throttling"
+msgstr "کنترل لاگ در ترافیک بالا"
+
+#: filter-guard-for-woocommerce.php:1282
+msgid "Emergency log pressure guard"
+msgstr "محافظ فشار لاگ اضطراری"
+
+#: filter-guard-for-woocommerce.php:1285
+msgid "Auto Emergency Mode"
+msgstr "حالت اضطراری خودکار"
+
+#: filter-guard-for-woocommerce.php:1287
+msgid "Enable Auto Emergency"
+msgstr "فعال‌سازی اضطراری خودکار"
+
+#: filter-guard-for-woocommerce.php:1288
+msgid "Window minutes"
+msgstr "دقایق پنجره"
+
+#: filter-guard-for-woocommerce.php:1289
+msgid "Strict threshold"
+msgstr "آستانه سخت‌گیرانه"
+
+#: filter-guard-for-woocommerce.php:1290
+msgid "Emergency threshold"
+msgstr "آستانه اضطراری"
+
+#: filter-guard-for-woocommerce.php:1291
+msgid "Distinct IP threshold"
+msgstr "آستانه IP یکتا"
+
+#: filter-guard-for-woocommerce.php:1292
+msgid "Recovery minutes"
+msgstr "دقایق بازیابی"
+
+#: filter-guard-for-woocommerce.php:1295
+msgid "Rate Limit"
+msgstr "محدودسازی نرخ"
+
+#: filter-guard-for-woocommerce.php:1297
+msgid "Enable rate limit"
+msgstr "فعال‌سازی محدودسازی نرخ"
+
+#: filter-guard-for-woocommerce.php:1298
+msgid "IP threshold"
+msgstr "آستانه IP"
+
+#: filter-guard-for-woocommerce.php:1299
+msgid "Range threshold"
+msgstr "آستانه بازه"
+
+#: filter-guard-for-woocommerce.php:1300
+msgid "Window seconds"
+msgstr "ثانیه‌های پنجره"
+
+#: filter-guard-for-woocommerce.php:1301
+msgid "Block seconds"
+msgstr "ثانیه‌های بلاک"
+
+#: filter-guard-for-woocommerce.php:1304
+msgid "Verified Search Bots"
+msgstr "ربات‌های جست‌وجوی تأییدشده"
+
+#: filter-guard-for-woocommerce.php:1306
+msgid "Bot verification"
+msgstr "تأیید ربات"
+
+#: filter-guard-for-woocommerce.php:1307
+msgid "Verified bot cache TTL"
+msgstr "TTL کش ربات تأییدشده"
+
+#: filter-guard-for-woocommerce.php:1308
+msgid "Verified bot max filter score"
+msgstr "حداکثر امتیاز فیلتر برای ربات تأییدشده"
+
+#: filter-guard-for-woocommerce.php:1311
+msgid "Health Check / Rollback / Uninstall"
+msgstr "بررسی سلامت / بازگشت / حذف نصب"
+
+#: filter-guard-for-woocommerce.php:1313
+msgid "Health check after changes"
+msgstr "بررسی سلامت پس از تغییرات"
+
+#: filter-guard-for-woocommerce.php:1314
+msgid "Health check test path"
+msgstr "مسیر تست بررسی سلامت"
+
+#: filter-guard-for-woocommerce.php:1315
+msgid "Remove file rules on uninstall"
+msgstr "حذف قوانین فایل هنگام uninstall"
+
+#: filter-guard-for-woocommerce.php:1317
+msgid "Save Settings & Regenerate Rules"
+msgstr "ذخیره تنظیمات و تولید دوباره قوانین"
+
+#: filter-guard-for-woocommerce.php:1326
+msgid "Server Rule Generators"
+msgstr "تولیدکننده قوانین سرور"
+
+#: filter-guard-for-woocommerce.php:1346
+msgid "Rollback Backups"
+msgstr "پشتیبان‌های بازگشت"
+
+#: filter-guard-for-woocommerce.php:1357
+msgid "Manual Actions / Test Tools"
+msgstr "اقدام‌های دستی / ابزارهای تست"
+
+#: filter-guard-for-woocommerce.php:1358
+msgid "Run Health Check / Self-Tests"
+msgstr "اجرای بررسی سلامت / خودآزمایی"
+
+#: filter-guard-for-woocommerce.php:1359
+msgid "Rewrite .htaccess Guard"
+msgstr "بازنویسی محافظ .htaccess"
+
+#: filter-guard-for-woocommerce.php:1360
+msgid "Remove .htaccess Guard"
+msgstr "حذف محافظ .htaccess"
+
+#: filter-guard-for-woocommerce.php:1361
+msgid "Rewrite robots.txt Rules"
+msgstr "بازنویسی قوانین robots.txt"
+
+#: filter-guard-for-woocommerce.php:1362
+msgid "Remove robots.txt Rules"
+msgstr "حذف قوانین robots.txt"
+
+#: filter-guard-for-woocommerce.php:1363
+msgid "Restore Latest Backup"
+msgstr "بازیابی آخرین پشتیبان"
+
+#: filter-guard-for-woocommerce.php:1364
+msgid "Rotate Cookie Secret / Invalidate Cookies"
+msgstr "چرخش راز کوکی / نامعتبر کردن کوکی‌ها"
+
+#: filter-guard-for-woocommerce.php:1365
+msgid "Export Events CSV"
+msgstr "خروجی CSV رخدادها"
+
+#: filter-guard-for-woocommerce.php:2001
+msgid "Homepage"
+msgstr "صفحه اصلی"
+
+#: filter-guard-for-woocommerce.php:2003
+msgid "Policy test URL available"
+msgstr "URL تست سیاست در دسترس است"
+
+#: filter-guard-for-woocommerce.php:2008
+msgid "Auto-detected a WooCommerce shop/category path. Saving an explicit path is still recommended."
+msgstr "مسیر فروشگاه/دسته‌بندی ووکامرس به‌صورت خودکار تشخیص داده شد. همچنان توصیه می‌شود مسیر را صریحاً ذخیره کنید."
+
+#: filter-guard-for-woocommerce.php:2008
+msgid "Set a real WooCommerce category/shop path to avoid false PASS results from 404 pages."
+msgstr "برای جلوگیری از PASS کاذب ناشی از صفحات 404، یک مسیر واقعی دسته‌بندی/فروشگاه ووکامرس تنظیم کنید."
+
+#: filter-guard-for-woocommerce.php:2020
+msgid "Configured clean test URL"
+msgstr "URL تست تمیز تنظیم‌شده"
+
+#: filter-guard-for-woocommerce.php:2021
+msgid "No cookie / no referer"
+msgstr "بدون کوکی / بدون Referer"
+
+#: filter-guard-for-woocommerce.php:2022
+msgid "Cookie only"
+msgstr "فقط کوکی"
+
+#: filter-guard-for-woocommerce.php:2023
+msgid "Cookie + internal referer"
+msgstr "کوکی + Referer داخلی"
+
+#: filter-guard-for-woocommerce.php:2027
+msgid "XML-RPC"
+msgstr "XML-RPC"
+
+#: filter-guard-for-woocommerce.php:2028
+msgid "robots.txt"
+msgstr "robots.txt"
+
+#: filter-guard-for-woocommerce.php:2161
+msgid "Protected path regex is invalid."
+msgstr "Regex مسیر محافظت‌شده نامعتبر است."
+
+#: filter-guard-for-woocommerce.php:2161
+msgid "Query key regex is invalid."
+msgstr "Regex کلید query نامعتبر است."
+
+#: filter-guard-for-woocommerce.php:2169
+msgid "Legacy compatible cookie regex is invalid."
+msgstr "Regex کوکی سازگار قدیمی نامعتبر است."
+
+#: filter-guard-for-woocommerce.php:2173
+msgid "Allow User-Agent regex is invalid."
+msgstr "Regex User-Agent مجاز نامعتبر است."
+
+#: filter-guard-for-woocommerce.php:2179
+msgid "%s contains characters that are unsafe for single-line Apache RewriteCond rules."
+msgstr "%s شامل کاراکترهایی است که برای قوانین تک‌خطی Apache RewriteCond امن نیستند."
+
+#: filter-guard-for-woocommerce.php:292
+msgid "Settings"
+msgstr "تنظیمات"
+
+#: filter-guard-for-woocommerce.php:399
+msgid "403"
+msgstr "۴۰۳"
+
+#: filter-guard-for-woocommerce.php:1035 filter-guard-for-woocommerce.php:1036 filter-guard-for-woocommerce.php:1037
+msgid "Present"
+msgstr "موجود"
+
+#: filter-guard-for-woocommerce.php:1035
+msgid "Not present"
+msgstr "موجود نیست"
+
+#: filter-guard-for-woocommerce.php:1036
+msgid "Missing"
+msgstr "یافت نشد"
+
+#: filter-guard-for-woocommerce.php:1037
+msgid "Not present / virtual only"
+msgstr "موجود نیست / فقط مجازی"
+
+#: filter-guard-for-woocommerce.php:1200
+msgid "PASS"
+msgstr "قبول"
+
+#: filter-guard-for-woocommerce.php:1200
+msgid "CHECK"
+msgstr "بررسی"
+
+#: filter-guard-for-woocommerce.php:2840
+msgid "Unauthorized"
+msgstr "غیرمجاز"
+
+#: filter-guard-for-woocommerce.php:1013
+msgid "Crawl-flood protection, SEO soft control, signed human cookies, event logging, local rate limiting, rollback, and server rule generation for WooCommerce filtered archive URLs."
+msgstr "محافظت در برابر crawl-flood، کنترل سئوی نرم، کوکی‌های انسانی امضاشده، ثبت رخداد، محدودسازی نرخ محلی، بازگشت و تولید قوانین سرور برای URLهای آرشیو فیلترشده ووکامرس."
+
+#: filter-guard-for-woocommerce.php:1014
+msgid "Apache/LiteSpeed .htaccess rules run before WordPress. Requests blocked by those pre-PHP rules are intentionally not recorded in the WordPress database event log. The Live Dashboard counters below count PHP-level plugin events only."
+msgstr "قوانین .htaccess در Apache/LiteSpeed پیش از وردپرس اجرا می‌شوند. درخواست‌هایی که توسط این قوانین پیش از PHP بلاک شوند عمداً در لاگ رخداد دیتابیس وردپرس ثبت نمی‌شوند. شمارنده‌های داشبورد زنده فقط رخدادهای سطح PHP افزونه را می‌شمارند."
+
+#: filter-guard-for-woocommerce.php:1016
+msgid "Server guard is active:"
+msgstr "محافظ سرور فعال است:"
+
+#: filter-guard-for-woocommerce.php:1016
+msgid "A private-window direct request without the Filter Guard human cookie can be blocked by .htaccess before WordPress loads. That is expected protection behavior, but it will not increment PHP dashboard statistics. Check Apache/LiteSpeed access logs for those pre-PHP blocks, or temporarily disable Manage .htaccess guard if you need a PHP-level logging test."
+msgstr "درخواست مستقیم از پنجره خصوصی بدون کوکی انسانی Filter Guard می‌تواند پیش از بارگذاری وردپرس توسط .htaccess بلاک شود. این رفتار محافظتی مورد انتظار است، اما آمار داشبورد PHP را افزایش نمی‌دهد. برای این بلاک‌های پیش از PHP لاگ دسترسی Apache/LiteSpeed را بررسی کنید یا اگر به تست لاگ در سطح PHP نیاز دارید، موقتاً مدیریت محافظ .htaccess را غیرفعال کنید."
+
+#: filter-guard-for-woocommerce.php:1029
+msgid "Dashboard scope:"
+msgstr "دامنه داشبورد:"
+
+#: filter-guard-for-woocommerce.php:1029
+msgid "These counters are based on WordPress/PHP event-log entries. They cannot count requests stopped by Apache/LiteSpeed before WordPress starts."
+msgstr "این شمارنده‌ها بر اساس رخدادهای ثبت‌شده در WordPress/PHP هستند. آن‌ها نمی‌توانند درخواست‌هایی را بشمارند که Apache/LiteSpeed پیش از شروع وردپرس متوقف کرده است."
+
+#: filter-guard-for-woocommerce.php:1034
+msgid "Current human cookie name"
+msgstr "نام فعلی کوکی انسانی"
+
+#: filter-guard-for-woocommerce.php:1035
+msgid ".htaccess guard"
+msgstr "محافظ .htaccess"
+
+#: filter-guard-for-woocommerce.php:1036
+msgid "Light block page"
+msgstr "صفحه بلاک سبک"
+
+#: filter-guard-for-woocommerce.php:1037
+msgid "robots.txt block"
+msgstr "بلاک robots.txt"
+
+#: filter-guard-for-woocommerce.php:1174
+msgid "Cookie + Referer mode is very strict."
+msgstr "حالت کوکی + Referer بسیار سخت‌گیرانه است."
+
+#: filter-guard-for-woocommerce.php:1174
+msgid "Direct visits from Google, external links, messaging apps, or browsers that omit the Referer header may receive 403 on protected filtered URLs until a valid Filter Guard cookie and internal referer exist. Use this mode mainly during active crawl floods; Cookie or SEO Soft is usually safer for normal operation."
+msgstr "بازدیدهای مستقیم از گوگل، لینک‌های خارجی، پیام‌رسان‌ها یا مرورگرهایی که هدر Referer را حذف می‌کنند ممکن است تا زمانی که کوکی معتبر Filter Guard و Referer داخلی وجود نداشته باشد، روی URLهای فیلترشده محافظت‌شده 403 دریافت کنند. این حالت را عمدتاً هنگام crawl flood فعال استفاده کنید؛ برای کارکرد عادی معمولاً کوکی یا سئوی نرم امن‌تر است."
+
+#: filter-guard-for-woocommerce.php:1182
+msgid "High-impact blocking mode is active."
+msgstr "حالت بلاک پراثر فعال است."
+
+#: filter-guard-for-woocommerce.php:1182
+msgid "Review Health Check results and generated server/CDN rules before leaving this mode enabled for long periods."
+msgstr "پیش از فعال نگه داشتن طولانی‌مدت این حالت، نتایج بررسی سلامت و قوانین تولیدشده سرور/CDN را مرور کنید."
+
+#: filter-guard-for-woocommerce.php:1195
+msgid "Run at:"
+msgstr "اجرا در:"
+
+#: filter-guard-for-woocommerce.php:1195
+msgid "Mode:"
+msgstr "حالت:"
+
+#: filter-guard-for-woocommerce.php:1197
+msgid "Test"
+msgstr "تست"
+
+#: filter-guard-for-woocommerce.php:1197
+msgid "URL"
+msgstr "URL"
+
+#: filter-guard-for-woocommerce.php:1197 filter-guard-for-woocommerce.php:1213
+msgid "Status"
+msgstr "وضعیت"
+
+#: filter-guard-for-woocommerce.php:1197
+msgid "X-Robots-Tag"
+msgstr "X-Robots-Tag"
+
+#: filter-guard-for-woocommerce.php:1197
+msgid "Result"
+msgstr "نتیجه"
+
+#: filter-guard-for-woocommerce.php:1197
+msgid "Note"
+msgstr "یادداشت"
+
+#: filter-guard-for-woocommerce.php:1211
+msgid "Recent Events shows only requests that reached WordPress/PHP. Requests blocked by generated .htaccess rules before PHP are visible in server access logs, not in this table."
+msgstr "رخدادهای اخیر فقط درخواست‌هایی را نشان می‌دهد که به WordPress/PHP رسیده‌اند. درخواست‌هایی که پیش از PHP توسط قوانین .htaccess تولیدشده بلاک شوند در لاگ دسترسی سرور دیده می‌شوند، نه در این جدول."
+
+#: filter-guard-for-woocommerce.php:1213
+msgid "Time"
+msgstr "زمان"
+
+#: filter-guard-for-woocommerce.php:1213
+msgid "Event"
+msgstr "رخداد"
+
+#: filter-guard-for-woocommerce.php:1213
+msgid "Action"
+msgstr "اقدام"
+
+#: filter-guard-for-woocommerce.php:1213
+msgid "Score"
+msgstr "امتیاز"
+
+#: filter-guard-for-woocommerce.php:1213
+msgid "URI"
+msgstr "URI"
+
+#: filter-guard-for-woocommerce.php:1216
+msgid "No events logged yet."
+msgstr "هنوز رخدادی ثبت نشده است."
+
+#: filter-guard-for-woocommerce.php:1234
+msgid "Recommended daily setup"
+msgstr "تنظیم پیشنهادی روزمره"
+
+#: filter-guard-for-woocommerce.php:1234
+msgid "Use Cookie mode, keep .htaccess guard enabled, keep event logging enabled, and run Health Check after rule changes."
+msgstr "از حالت کوکی استفاده کنید، محافظ .htaccess را فعال نگه دارید، ثبت رخداد را فعال نگه دارید و پس از تغییر قوانین بررسی سلامت را اجرا کنید."
+
+#: filter-guard-for-woocommerce.php:1235
+msgid "Advanced settings are collapsed"
+msgstr "تنظیمات پیشرفته جمع شده‌اند"
+
+#: filter-guard-for-woocommerce.php:1235
+msgid "Open only the section you want to edit. This keeps the page readable while preserving all expert controls."
+msgstr "فقط بخشی را باز کنید که می‌خواهید ویرایش کنید. این کار صفحه را خوانا نگه می‌دارد و همه کنترل‌های تخصصی را حفظ می‌کند."
+
+#: filter-guard-for-woocommerce.php:1236
+msgid "Help icons are contextual"
+msgstr "آیکون‌های راهنما زمینه‌مند هستند"
+
+#: filter-guard-for-woocommerce.php:1236
+msgid "Hover or focus the blue question mark beside a section or setting to see a focused explanation without leaving the page."
+msgstr "برای دیدن توضیح متمرکز بدون خروج از صفحه، روی علامت سؤال آبی کنار بخش یا تنظیم hover کنید یا آن را focus کنید."
+
+#: filter-guard-for-woocommerce.php:1244
+msgid "Default is Monitor Only; it logs and scores only and does not modify SEO tags, cookies, robots, rate limits, XML-RPC, or server blocking."
+msgstr "پیش‌فرض فقط پایش است؛ فقط ثبت و امتیازدهی انجام می‌دهد و تگ‌های سئو، کوکی‌ها، robots، rate limit، XML-RPC یا بلاک سرور را تغییر نمی‌دهد."
+
+#: filter-guard-for-woocommerce.php:1245
+msgid "Auto Emergency returns to this mode after the recovery period."
+msgstr "Auto Emergency پس از دوره بازیابی به این حالت برمی‌گردد."
+
+#: filter-guard-for-woocommerce.php:1246
+msgid "Write Apache/LiteSpeed rewrite rules to block expensive filtered URLs before PHP."
+msgstr "قوانین rewrite برای Apache/LiteSpeed می‌نویسد تا URLهای فیلترشده پرهزینه پیش از PHP بلاک شوند."
+
+#: filter-guard-for-woocommerce.php:1247
+msgid "Block xmlrpc.php at PHP and .htaccess levels when enabled."
+msgstr "در صورت فعال بودن، xmlrpc.php را در سطح PHP و .htaccess بلاک می‌کند."
+
+#: filter-guard-for-woocommerce.php:1248
+msgid "403 Forbidden"
+msgstr "۴۰۳ ممنوع"
+
+#: filter-guard-for-woocommerce.php:1248
+msgid "404 Not Found"
+msgstr "۴۰۴ یافت نشد"
+
+#: filter-guard-for-woocommerce.php:1251
+msgid "Optional legacy compatibility only. Generated server rules use only Filter Guard signed cookie names; HMAC validation always happens in PHP."
+msgstr "فقط سازگاری اختیاری با نسخه قدیمی. قوانین تولیدشده سرور فقط از نام کوکی‌های امضاشده Filter Guard استفاده می‌کنند؛ اعتبارسنجی HMAC همیشه در PHP انجام می‌شود."
+
+#: filter-guard-for-woocommerce.php:1254
+msgid "Comma-separated role slugs for PHP-level guard only."
+msgstr "اسلاگ نقش‌ها، جداشده با کاما، فقط برای محافظ سطح PHP."
+
+#: filter-guard-for-woocommerce.php:1264
+msgid "Redirect high-score filters to clean URL"
+msgstr "ریدایرکت فیلترهای با امتیاز بالا به URL تمیز"
+
+#: filter-guard-for-woocommerce.php:1264
+msgid "Block high-score filters"
+msgstr "بلاک فیلترهای با امتیاز بالا"
+
+#: filter-guard-for-woocommerce.php:1269
+msgid "Set a lightweight first-party HttpOnly cookie."
+msgstr "یک کوکی سبک first-party و HttpOnly تنظیم می‌کند."
+
+#: filter-guard-for-woocommerce.php:1272
+msgid "HMAC-sign cookie value"
+msgstr "امضای HMAC مقدار کوکی"
+
+#: filter-guard-for-woocommerce.php:1272
+msgid "Rotate cookie name daily"
+msgstr "چرخش روزانه نام کوکی"
+
+#: filter-guard-for-woocommerce.php:1272
+msgid "Bind signature to User-Agent"
+msgstr "اتصال امضا به User-Agent"
+
+#: filter-guard-for-woocommerce.php:1272
+msgid "Bind signature to IP prefix"
+msgstr "اتصال امضا به پیشوند IP"
+
+#: filter-guard-for-woocommerce.php:1277
+msgid "Record blocked/allowed/noindex/mode/test events."
+msgstr "رخدادهای بلاک/مجاز/noindex/حالت/تست را ثبت کن."
+
+#: filter-guard-for-woocommerce.php:1281
+msgid "Start sampling after"
+msgstr "شروع نمونه‌برداری پس از"
+
+#: filter-guard-for-woocommerce.php:1281
+msgid "events per minute; keep one event out of"
+msgstr "رخداد در دقیقه؛ نگهداری یک رخداد از هر"
+
+#: filter-guard-for-woocommerce.php:1281
+msgid "Set threshold to 0 to disable sampling. Sampling protects the database during crawl floods while runtime attack counters still drive Auto Emergency."
+msgstr "برای غیرفعال کردن نمونه‌برداری، آستانه را ۰ بگذارید. نمونه‌برداری هنگام crawl flood از دیتابیس محافظت می‌کند، در حالی که شمارنده‌های runtime حمله همچنان Auto Emergency را هدایت می‌کنند."
+
+#: filter-guard-for-woocommerce.php:1282
+msgid "Skip repetitive per-request block/allow/noindex logs while Emergency mode is active."
+msgstr "هنگام فعال بودن حالت اضطراری، لاگ‌های تکراری block/allow/noindex برای هر درخواست را رد کن."
+
+#: filter-guard-for-woocommerce.php:1287
+msgid "Automatically switch to strict/emergency when filtered-request or blocked-request thresholds are exceeded."
+msgstr "وقتی آستانه‌های درخواست فیلترشده یا بلاک‌شده رد شوند، خودکار به سخت‌گیرانه/اضطراری تغییر بده."
+
+#: filter-guard-for-woocommerce.php:1297
+msgid "Use best-effort short-lived WordPress transients/object-cache counters. Disabled by default so Monitor mode never blocks unexpectedly; use server/CDN rate limits for high-volume attacks."
+msgstr "از شمارنده‌های کوتاه‌مدت transient/object-cache وردپرس به‌صورت best-effort استفاده می‌کند. پیش‌فرض غیرفعال است تا حالت پایش ناخواسته بلاک نکند؛ برای حملات سنگین از rate limit سرور/CDN استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:1306
+msgid "Block fake search bot user agents when verification fails"
+msgstr "در صورت شکست تأیید، User-Agent ربات جست‌وجوی جعلی را بلاک کن"
+
+#: filter-guard-for-woocommerce.php:1313
+msgid "Run lightweight self-tests after writing server files."
+msgstr "پس از نوشتن فایل‌های سرور، خودآزمایی سبک اجرا کن."
+
+#: filter-guard-for-woocommerce.php:1313
+msgid "Rollback latest backup if health check fails"
+msgstr "اگر بررسی سلامت ناموفق بود، آخرین پشتیبان را بازیابی کن"
+
+#: filter-guard-for-woocommerce.php:1314
+msgid "Use a real WooCommerce category or shop path that returns 200 before query parameters are added. If left empty, Filter Guard auto-detects and saves the shop/category path when possible."
+msgstr "از یک مسیر واقعی دسته‌بندی یا فروشگاه ووکامرس استفاده کنید که پیش از افزودن پارامترهای query پاسخ 200 بدهد. اگر خالی بماند، Filter Guard در صورت امکان مسیر فروشگاه/دسته‌بندی را خودکار تشخیص داده و ذخیره می‌کند."
+
+#: filter-guard-for-woocommerce.php:1314
+msgid "Current effective test path:"
+msgstr "مسیر تست مؤثر فعلی:"
+
+#: filter-guard-for-woocommerce.php:1315
+msgid "When uninstalling, remove managed .htaccess/robots.txt blocks and blocked-light.html."
+msgstr "هنگام uninstall، بلاک‌های مدیریت‌شده .htaccess/robots.txt و blocked-light.html را حذف کن."
+
+#: filter-guard-for-woocommerce.php:1315
+msgid "Important:"
+msgstr "مهم:"
+
+#: filter-guard-for-woocommerce.php:1315
+msgid "If this remains disabled, managed .htaccess and robots.txt blocks may remain after plugin uninstall. Enable it before deleting the plugin when you want full cleanup."
+msgstr "اگر این گزینه غیرفعال بماند، بلاک‌های مدیریت‌شده .htaccess و robots.txt ممکن است پس از uninstall افزونه باقی بمانند. وقتی پاک‌سازی کامل می‌خواهید، پیش از حذف افزونه آن را فعال کنید."
+
+#: filter-guard-for-woocommerce.php:1327
+msgid "Use these generated rules for environments where the plugin cannot safely write server configuration directly."
+msgstr "از این قوانین تولیدشده برای محیط‌هایی استفاده کنید که افزونه نمی‌تواند پیکربندی سرور را مستقیماً و ایمن بنویسد."
+
+#: filter-guard-for-woocommerce.php:1328
+msgid "Server/CDN rules only pre-check Filter Guard cookie-name presence; the signed HMAC cookie is still validated in PHP. Prefer the regex Cloudflare expression when your plan supports it; use the fallback expression when regex matching is unavailable."
+msgstr "قوانین سرور/CDN فقط وجود نام کوکی Filter Guard را پیش‌بررسی می‌کنند؛ کوکی HMAC امضاشده همچنان در PHP اعتبارسنجی می‌شود. اگر پلن شما پشتیبانی می‌کند، عبارت regex Cloudflare را ترجیح دهید؛ در نبود regex از عبارت fallback استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:1330
+msgid "Blocking server rules are intentionally not generated in Off, Monitor, or SEO Soft Mode. Switch to Cookie, Cookie + Referer, Strict, or Emergency mode to generate blocking rules."
+msgstr "قوانین بلاک سرور عمداً در حالت خاموش، پایش یا سئوی نرم تولید نمی‌شوند. برای تولید قوانین بلاک، به حالت کوکی، کوکی + Referer، سخت‌گیرانه یا اضطراری تغییر دهید."
+
+#: filter-guard-for-woocommerce.php:1334
+msgid "Cloudflare Expression - Regex / stricter"
+msgstr "عبارت Cloudflare - Regex / سخت‌گیرانه‌تر"
+
+#: filter-guard-for-woocommerce.php:1335
+msgid "Copy only this expression when the Cloudflare rule editor accepts the regex matches operator. Do not paste the fallback expression together with this one."
+msgstr "فقط زمانی این عبارت را کپی کنید که ویرایشگر قانون Cloudflare عملگر regex matches را می‌پذیرد. عبارت fallback را همراه این یکی paste نکنید."
+
+#: filter-guard-for-woocommerce.php:1337
+msgid "Cloudflare Expression - No-regex fallback"
+msgstr "عبارت Cloudflare - fallback بدون regex"
+
+#: filter-guard-for-woocommerce.php:1338
+msgid "Use only this fallback expression if your Cloudflare plan or rules UI rejects regex matching."
+msgstr "فقط اگر پلن Cloudflare یا رابط قوانین، regex matching را رد کرد از این عبارت fallback استفاده کنید."
+
+#: filter-guard-for-woocommerce.php:1347
+msgid "Backup"
+msgstr "پشتیبان"
+
+#: filter-guard-for-woocommerce.php:1347
+msgid "Files"
+msgstr "فایل‌ها"
+
+#: filter-guard-for-woocommerce.php:1347
+msgid "Reason"
+msgstr "دلیل"
+
+#: filter-guard-for-woocommerce.php:1348
+msgid "No backups yet."
+msgstr "هنوز پشتیبانی وجود ندارد."
+
+
+#: filter-guard-for-woocommerce.php
+msgid ".htaccess filtered-URL guard removed for the current protection mode. Cookie modes are enforced in WordPress/PHP."
+msgstr "محافظ .htaccess مربوط به URLهای فیلترشده برای حالت فعلی حذف شد. حالت‌های کوکی در WordPress/PHP اعمال می‌شوند."
+
+#: filter-guard-for-woocommerce.php
+msgid "Could not remove the managed .htaccess guard. Check file permissions or remove the managed block manually."
+msgstr "امکان حذف محافظ مدیریت‌شده .htaccess وجود نداشت. دسترسی فایل‌ها را بررسی کنید یا بلاک مدیریت‌شده را دستی حذف کنید."
+
+#: filter-guard-for-woocommerce.php
+msgid "Apache/LiteSpeed .htaccess rules run before WordPress. In Cookie modes, filtered URLs are handled in WordPress/PHP so real shoppers are not falsely blocked before cookie validation. Strict/Emergency pre-PHP blocks are not recorded in the WordPress database event log."
+msgstr "قوانین .htaccess در Apache/LiteSpeed پیش از WordPress اجرا می‌شوند. در حالت‌های کوکی، URLهای فیلترشده داخل WordPress/PHP مدیریت می‌شوند تا خریداران واقعی پیش از اعتبارسنجی کوکی اشتباهاً بلاک نشوند. بلاک‌های پیش از PHP در حالت سخت‌گیرانه/اضطراری در لاگ دیتابیس WordPress ثبت نمی‌شوند."
+
+#: filter-guard-for-woocommerce.php
+msgid "Strict or Emergency server rules can block requests before WordPress loads. Cookie mode intentionally avoids filtered-URL pre-PHP blocking so normal shoppers can be validated by PHP."
+msgstr "قوانین سرور در حالت سخت‌گیرانه یا اضطراری می‌توانند درخواست‌ها را پیش از بارگذاری WordPress بلاک کنند. حالت کوکی عمداً از بلاک پیش از PHP برای URLهای فیلترشده پرهیز می‌کند تا خریداران عادی توسط PHP اعتبارسنجی شوند."
+
+#: filter-guard-for-woocommerce.php
+msgid "When enabled on Apache/LiteSpeed, the plugin can write server-level rules. Filtered-URL pre-PHP blocking is intentionally limited to Strict and Emergency modes to avoid false blocking real shoppers in Cookie modes."
+msgstr "وقتی در Apache/LiteSpeed فعال باشد، افزونه می‌تواند قوانین سطح سرور بنویسد. بلاک پیش از PHP برای URLهای فیلترشده عمداً فقط به حالت‌های سخت‌گیرانه و اضطراری محدود شده تا در حالت‌های کوکی خریداران واقعی اشتباهاً بلاک نشوند."
+
+#: filter-guard-for-woocommerce.php
+msgid "Use Cookie mode for normal storefront protection, keep event logging enabled, and reserve pre-PHP .htaccess filtered blocking for Strict/Emergency incidents."
+msgstr "برای محافظت عادی فروشگاه از حالت کوکی استفاده کنید، لاگ رخدادها را فعال نگه دارید و بلاک .htaccess پیش از PHP برای URLهای فیلترشده را فقط برای رخدادهای سخت‌گیرانه/اضطراری نگه دارید."
+
+#: filter-guard-for-woocommerce.php
+msgid "Write Apache/LiteSpeed rewrite rules for server-level protection when the selected mode supports safe pre-PHP blocking."
+msgstr "وقتی حالت انتخاب‌شده از بلاک امن پیش از PHP پشتیبانی می‌کند، قوانین rewrite مربوط به Apache/LiteSpeed را برای محافظت سطح سرور بنویس."
+
+#: filter-guard-for-woocommerce.php
+msgid "Filtered-URL pre-PHP blocking rules are generated only in Strict and Emergency modes. Cookie modes are enforced in WordPress/PHP to avoid false blocking real shoppers."
+msgstr "قوانین بلاک پیش از PHP برای URLهای فیلترشده فقط در حالت‌های سخت‌گیرانه و اضطراری تولید می‌شوند. حالت‌های کوکی داخل WordPress/PHP اعمال می‌شوند تا خریداران واقعی اشتباهاً بلاک نشوند."
+
+#: filter-guard-for-woocommerce.php
+msgid "Expand all settings"
+msgstr "باز کردن همه تنظیمات"
+
+#: filter-guard-for-woocommerce.php
+msgid "Collapse advanced settings"
+msgstr "بستن تنظیمات پیشرفته"
+
+#: filter-guard-for-woocommerce.php
+msgid "Collapsed"
+msgstr "بسته شده"
+
+#: filter-guard-for-woocommerce.php
+msgid "Expanded"
+msgstr "باز شده"
+
+#: filter-guard-for-woocommerce.php
+msgid ".htaccess Diagnostics"
+msgstr "عیب‌یابی .htaccess"
+
+#: filter-guard-for-woocommerce.php
+msgid "Path"
+msgstr "مسیر"
+
+#: filter-guard-for-woocommerce.php
+msgid "Exists"
+msgstr "وجود دارد"
+
+#: filter-guard-for-woocommerce.php
+msgid "Readable / writable"
+msgstr "خواندنی / نوشتنی"
+
+#: filter-guard-for-woocommerce.php
+msgid "Managed block"
+msgstr "بلاک مدیریت‌شده"
+
+#: filter-guard-for-woocommerce.php
+msgid "Current SHA-256"
+msgstr "SHA-256 فعلی"
+
+#: filter-guard-for-woocommerce.php
+msgid "Filesystem method"
+msgstr "روش فایل‌سیستم"
+
+#: filter-guard-for-woocommerce.php
+msgid "Last write result"
+msgstr "نتیجه آخرین نوشتن"
+
+#: filter-guard-for-woocommerce.php
+msgid "Last hash before / after"
+msgstr "هش قبل / بعد"
+
+#: filter-guard-for-woocommerce.php
+msgid "Yes"
+msgstr "بله"
+
+#: filter-guard-for-woocommerce.php
+msgid "No"
+msgstr "خیر"
+
+#: filter-guard-for-woocommerce.php
+msgid "readable"
+msgstr "خواندنی"
+
+#: filter-guard-for-woocommerce.php
+msgid "not readable"
+msgstr "غیرقابل خواندن"
+
+#: filter-guard-for-woocommerce.php
+msgid "writable"
+msgstr "نوشتنی"
+
+#: filter-guard-for-woocommerce.php
+msgid "not writable"
+msgstr "غیرقابل نوشتن"
+
+#: filter-guard-for-woocommerce.php
+msgid "Success"
+msgstr "موفق"
+
+#: filter-guard-for-woocommerce.php
+msgid "Failed"
+msgstr "ناموفق"
+
+#: filter-guard-for-woocommerce.php
+msgid "Cookie modes are PHP-level modes; filtered URL pre-PHP blocking is generated only for Strict/Emergency. XML-RPC .htaccess blocking is independent when enabled."
+msgstr "حالت‌های کوکی در سطح PHP اجرا می‌شوند؛ بلاک پیش از PHP برای URLهای فیلترشده فقط در حالت سخت‌گیرانه/اضطراری تولید می‌شود. بلاک .htaccess برای XML-RPC در صورت فعال بودن مستقل است."
+
+#: filter-guard-for-woocommerce.php
+msgid "Health-check bypass token"
+msgstr "توکن عبور تست سلامت"
+
+#: filter-guard-for-woocommerce.php
+msgid "Compatible cookie-name regex"
+msgstr "Regex نام کوکی سازگار"
+
+#: filter-guard-for-woocommerce.php
+msgid "Optional PHP-only compatibility for additional Filter Guard cookie names. The cookie value must still pass signed HMAC validation."
+msgstr "سازگاری اختیاری فقط در PHP برای نام‌های کوکی اضافی Filter Guard. مقدار کوکی همچنان باید اعتبارسنجی HMAC امضاشده را پاس کند."
+
+#: filter-guard-for-woocommerce.php
+msgid "Trusted proxy / real IP"
+msgstr "پروکسی مورد اعتماد / IP واقعی"
+
+#: filter-guard-for-woocommerce.php
+msgid "Off - use REMOTE_ADDR only"
+msgstr "خاموش - فقط استفاده از REMOTE_ADDR"
+
+#: filter-guard-for-woocommerce.php
+msgid "Cloudflare - trust CF-Connecting-IP from Cloudflare IP ranges"
+msgstr "Cloudflare - اعتماد به CF-Connecting-IP فقط از بازه‌های IP کلودفلر"
+
+#: filter-guard-for-woocommerce.php
+msgid "Custom trusted proxy CIDRs"
+msgstr "CIDRهای پروکسی مورد اعتماد سفارشی"
+
+#: filter-guard-for-woocommerce.php
+msgid "Use this only when REMOTE_ADDR is a trusted proxy. This affects rate limiting, IP allowlists, IP logging, bot verification, and optional IP-prefix cookie binding."
+msgstr "فقط وقتی استفاده شود که REMOTE_ADDR یک پروکسی مورد اعتماد است. این گزینه روی محدودیت نرخ، IPهای مجاز، ثبت IP، تأیید ربات و اتصال اختیاری کوکی به پیشوند IP اثر دارد."
+
+#: filter-guard-for-woocommerce.php
+msgid "Optional PHP-only compatible cookie-name regex. Matching cookie names still require the normal signed HMAC value, so arbitrary cookie values are not trusted."
+msgstr "Regex اختیاری نام کوکی سازگار فقط در PHP. نام‌های کوکی مطابق همچنان به مقدار HMAC امضاشده معتبر نیاز دارند، بنابراین مقدارهای دلخواه کوکی مورد اعتماد نیستند."
+
+#: filter-guard-for-woocommerce.php
+msgid "Shows the exact root .htaccess path, whether the file is readable and writable, whether a managed Filter Guard block is present, the current file hash, and the last write/remove result. Use this when server rules do not appear to save."
+msgstr "مسیر دقیق .htaccess ریشه، خواندنی/نوشتنی بودن فایل، وجود بلاک مدیریت‌شده Filter Guard، هش فعلی فایل و نتیجه آخرین نوشتن/حذف را نشان می‌دهد. وقتی قوانین سرور ذخیره نمی‌شوند از این بخش استفاده کنید."
