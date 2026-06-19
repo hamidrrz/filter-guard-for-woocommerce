@@ -308,7 +308,7 @@ Yes. Use the generated Cloudflare expression as a starting point and adapt it to
 
 Please report security issues privately instead of opening a public issue.
 
-Recommended contact:
+contact:
 
 ```text
 Hamidreza Rezaei
