@@ -1,11 +1,11 @@
-=== Filter Guard for WooCommerce ===
-Contributors: hamidrezarezaei
+=== FacetFence Product Filters ===
+Contributors: hrezaei
 Tags: woocommerce, security, seo, crawler, noindex
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.5.8
+Stable tag: 1.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Protect WooCommerce filtered URLs from crawl floods with noindex/canonical contr
 
 == Description ==
 
-Filter Guard for WooCommerce is a defensive WooCommerce plugin for expensive layered-filter URLs such as:
+FacetFence Product Filters is a defensive WooCommerce plugin for expensive layered-filter URLs such as:
 
 `/product-category/active-equipment/?filter_poe=donthave&query_type_poe=or&filter_brand=cisco&query_type_brand=or`
 
@@ -41,8 +41,8 @@ The default mode is Monitor Only: it logs and scores only and does not modify SE
 == Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/` or install the ZIP file from the WordPress admin.
-2. Activate Filter Guard for WooCommerce.
-3. Go to Settings > Filter Guard for WooCommerce.
+2. Activate FacetFence Product Filters.
+3. Go to Settings > FacetFence Product Filters.
 4. Review dashboard, event log, and generated rules.
 5. Start with Monitor or SEO Soft Mode.
 6. Enable stronger protection only after running the built-in health checks.
@@ -67,7 +67,7 @@ Yes, but writing `.htaccess` is off by default. If enabled, the plugin creates b
 
 = Does the signed cookie work at Apache level? =
 
-Apache/LiteSpeed, Nginx, and Cloudflare can only pre-check that a Filter Guard signed cookie name exists. Generated server/CDN rules no longer trust WooCommerce cart/session cookies. Full HMAC signature validation always happens in PHP when WordPress receives the request.
+Apache/LiteSpeed, Nginx, and Cloudflare can only pre-check that a FacetFence signed cookie name exists. Generated server/CDN rules no longer trust WooCommerce cart/session cookies. Full HMAC signature validation always happens in PHP when WordPress receives the request.
 
 For Cloudflare, the generated expression uses query argument names and regex cookie matching for a tighter edge pre-check. The `matches` operator may require a plan that supports Cloudflare regex matching; PHP validation remains authoritative.
 
@@ -81,67 +81,27 @@ It can store security event logs. IP logging can be configured as full IP, anony
 
 == Privacy ==
 
-Filter Guard for WooCommerce can record security events related to expensive filtered URL requests. Depending on settings, logs may include event type, timestamp, method, URI, query length, filter count, User-Agent hash, IP hash, anonymized IP or full IP, referer/cookie presence, action taken, response status, protection mode, and complexity score.
+FacetFence Product Filters can record security events related to expensive filtered URL requests. Depending on settings, logs may include event type, timestamp, method, URI, query length, filter count, User-Agent hash, IP hash, anonymized IP or full IP, referer/cookie presence, action taken, response status, protection mode, and complexity score.
 
 Default privacy behavior:
 
 * IP logging mode: hash-only.
 * Event retention: 14 days.
 * Rate-limit counters use best-effort short-lived WordPress transients/object cache entries.
-* NDJSON event files and rollback backups are stored under `wp-content/filter-guard-for-woocommerce/` with deny rules and index files. NDJSON mode uses scoped append locking and remains optional; database logging is the default. For Nginx deployments, apply the generated internal-data deny rules or equivalent server restrictions.
-* Event database table and plugin-owned runtime/log directories are removed on uninstall.
+* NDJSON event files and rollback backups are stored under the WordPress uploads directory in a `facetfence-product-filters/` subdirectory with deny rules and index files. NDJSON mode uses scoped append locking and remains optional; database logging is the default. For Nginx deployments, apply the generated internal-data deny rules or equivalent server restrictions.
+* Event database table and plugin-owned uploads-based runtime/log directories are removed on uninstall.
 
-== Screenshots ==
-
-1. Live dashboard with blocked/allowed request counters and current mode.
-2. Protection settings with complexity scoring and signed cookie options.
-3. Event log table and CSV export.
-4. Server rule generators for Apache/LiteSpeed, Nginx, and Cloudflare.
-5. Rollback backup list and health check results.
 
 == Changelog ==
 
-= 1.5.8 =
-* Fixed Plugin Check warnings for translation loading, nonce/input handling helpers, and .htaccess writable diagnostics.
-
-= 1.5.7 =
-* Removed selected explanatory admin notices and the settings guide cards. Moved the save/regenerate button outside collapsed settings sections.
-
-= 1.5.6 =
-* Fixed Persian translation strings that showed a literal Unicode escape sequence instead of real zero-width non-joiner characters in the admin UI.
-
-= 1.5.5 =
-* Fixed real signed-cookie Health Check behavior and added a separate bypass-token test.
-* Preserved regex backslashes during settings saves.
-* Added .htaccess diagnostics and stronger write/remove reporting.
-* Split .htaccess logic so filtered URL pre-PHP blocking is only for Strict/Emergency, while XML-RPC blocking remains independent.
-* Implemented compatible cookie-name regex validation, trusted proxy IP handling, and localized admin JS labels.
-* Moved older changelog history to changelog.txt to keep readme.txt compact.
-
-= 1.5.4 =
-* Hardened .htaccess write/remove handling with a local filesystem fallback for hosts where WP_Filesystem cannot update the root .htaccess file.
-
-= 1.5.3 =
-* Fixed stale .htaccess cleanup so Cookie modes remove managed pre-PHP filter blocks during save and manual rewrite actions.
-
-See changelog.txt for older release history.
-
-== Upgrade Notice ==
+= 1.6 =
+* Renamed the plugin to FacetFence Product Filters and updated the slug, text domain, and plugin metadata.
+* Reworked plugin prefixes for classes, options, transients, hooks, and admin assets to avoid generic naming collisions.
+* Moved plugin-generated event logs, backups, and runtime files to an uploads-based plugin directory with aligned cleanup paths.
+* Clarified .htaccess guard status so non-server-blocking modes show it as not required instead of a missing requirement.
+* Hardened uploads-based runtime folders by creating index.php and .htaccess denial files with a local fallback when WP_Filesystem is unavailable.
+* Treat the managed .htaccess guard as required only when .htaccess management is enabled and the selected protection features need server-level rules.
 
 = 1.5.8 =
-Fixes Plugin Check findings for translation loading, POST helper input handling, and .htaccess diagnostics.
-
-= 1.5.7 =
-Refines the admin settings UI by removing extra helper text and keeping the save button visible outside collapsed sections.
-
-= 1.5.6 =
-Fixes Persian admin translation text that displayed a literal Unicode escape sequence instead of proper half-space characters.
-
-= 1.5.5 =
-Fixes Health Check cookie tests, regex input handling, .htaccess diagnostics, XML-RPC rule splitting, trusted proxy IP handling, JS labels, and readme size.
-
-= 1.5.4 =
-Hardened .htaccess write/remove handling with a local fallback for hosts where WP_Filesystem cannot update the root .htaccess file.
-
-= 1.5.3 =
-Fixes cleanup of stale .htaccess filter blocks when Cookie modes are active.
+* Initial public release.
+* Added WooCommerce filtered URL protection, SEO soft mode, signed cookie checks, event logging, rollback, and server rule generators.

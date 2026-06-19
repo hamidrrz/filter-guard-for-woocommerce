@@ -10,14 +10,14 @@
     }
 
     ready(function () {
-        var root = document.querySelector('.filter-guard-for-woocommerce-wrap');
+        var root = document.querySelector('.facetfence-product-filters-wrap');
         if (!root) {
             return;
         }
 
-        root.classList.add('filter-guard-for-woocommerce-js-ready');
+        root.classList.add('facetfence-product-filters-js-ready');
 
-        var helpButtons = root.querySelectorAll('.filter-guard-for-woocommerce-help-button');
+        var helpButtons = root.querySelectorAll('.facetfence-product-filters-help-button');
         helpButtons.forEach(function (button) {
             button.addEventListener('click', function (event) {
                 event.stopPropagation();
@@ -29,19 +29,19 @@
             });
         });
 
-        var form = root.querySelector('.filter-guard-for-woocommerce-settings-form');
+        var form = root.querySelector('.facetfence-product-filters-settings-form');
         if (!form) {
             return;
         }
 
-        var headings = Array.prototype.slice.call(form.querySelectorAll(':scope > h2.filter-guard-for-woocommerce-section-heading'));
+        var headings = Array.prototype.slice.call(form.querySelectorAll(':scope > h2.facetfence-product-filters-section-heading'));
         if (!headings.length) {
             return;
         }
 
-        var i18n = window.FilterGuardForWooCommerceAdmin || {};
+        var i18n = window.FacetFenceAdmin || {};
         var controls = document.createElement('div');
-        controls.className = 'filter-guard-for-woocommerce-accordion-controls';
+        controls.className = 'facetfence-product-filters-accordion-controls';
         var expandButton = document.createElement('button');
         expandButton.type = 'button';
         expandButton.className = 'button';
@@ -58,26 +58,26 @@
 
         headings.forEach(function (heading, index) {
             var details = document.createElement('details');
-            details.className = 'filter-guard-for-woocommerce-accordion';
+            details.className = 'facetfence-product-filters-accordion';
             if (index === 0) {
                 details.open = true;
             }
 
             var summary = document.createElement('summary');
-            summary.className = 'filter-guard-for-woocommerce-accordion-summary';
+            summary.className = 'facetfence-product-filters-accordion-summary';
 
             while (heading.firstChild) {
                 summary.appendChild(heading.firstChild);
             }
 
             var body = document.createElement('div');
-            body.className = 'filter-guard-for-woocommerce-accordion-body';
+            body.className = 'facetfence-product-filters-accordion-body';
 
             heading.parentNode.replaceChild(details, heading);
             details.appendChild(summary);
 
             var node = details.nextSibling;
-            while (node && !(node.nodeType === 1 && (node.matches('h2.filter-guard-for-woocommerce-section-heading') || node.matches('.filter-guard-for-woocommerce-settings-actions')))) {
+            while (node && !(node.nodeType === 1 && (node.matches('h2.facetfence-product-filters-section-heading') || node.matches('.facetfence-product-filters-settings-actions')))) {
                 var next = node.nextSibling;
                 body.appendChild(node);
                 node = next;

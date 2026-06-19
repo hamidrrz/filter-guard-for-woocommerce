@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: Filter Guard for WooCommerce 1.5.8\n"
+msgstr "Project-Id-Version: FacetFence Product Filters 1.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-02 07:05+0000\n"
 "PO-Revision-Date: 2026-06-02 06:30+0000\n"
@@ -11,1110 +11,1114 @@ msgstr "Project-Id-Version: Filter Guard for WooCommerce 1.5.8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: ChatGPT\n"
-"X-Domain: filter-guard-for-woocommerce\n"
+"X-Domain: facetfence-product-filters\n"
 ""
 
-#: filter-guard-for-woocommerce.php:270
+#: facetfence-product-filters.php:270
 msgid "Off - no SEO or protection changes"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:271
+#: facetfence-product-filters.php:271
 msgid "SEO Soft Mode - noindex/canonical with optional high-score redirect/block"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:272
+#: facetfence-product-filters.php:272
 msgid "Monitor Only - log and score only, no SEO tags/cookies/robots/blocking"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:273
+#: facetfence-product-filters.php:273
 msgid "Protection - require signed human cookie"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:274
+#: facetfence-product-filters.php:274
 msgid "Protection - require signed human cookie + internal referer"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:275
+#: facetfence-product-filters.php:275
 msgid "Strict - block protected filtered URLs except allowlists"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:276
+#: facetfence-product-filters.php:276
 msgid "Emergency - lightweight block for protected filtered URLs"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:749 filter-guard-for-woocommerce.php:749 filter-guard-for-woocommerce.php:1012
-msgid "Filter Guard for WooCommerce"
+#: facetfence-product-filters.php:749 facetfence-product-filters.php:749 facetfence-product-filters.php:1012
+msgid "FacetFence Product Filters"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:770
+#: facetfence-product-filters.php:770
 msgid "Blocking .htaccess rules are not written while protection mode is Off, Monitor, or SEO Soft Mode. Switch to Cookie, Cookie + Referer, Strict, or Emergency first."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:774
+#: facetfence-product-filters.php:774
 msgid ".htaccess guard written."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:774
+#: facetfence-product-filters.php:774
 msgid "Could not write .htaccess guard. Validate regex settings and file permissions."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:779
+#: facetfence-product-filters.php:779
 msgid ".htaccess guard removed."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:779
+#: facetfence-product-filters.php:779
 msgid "Could not remove .htaccess guard. Check file permissions."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:785
+#: facetfence-product-filters.php:785
 msgid "robots.txt rules are not written while protection mode is Off or Monitor. Use SEO Soft Mode or a blocking mode first."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:789
+#: facetfence-product-filters.php:789
 msgid "robots.txt rules written."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:789
+#: facetfence-product-filters.php:789
 msgid "Could not write robots.txt rules. Check file permissions."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:794
+#: facetfence-product-filters.php:794
 msgid "robots.txt rules removed."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:794
+#: facetfence-product-filters.php:794
 msgid "Could not remove robots.txt rules. Check file permissions."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:802
+#: facetfence-product-filters.php:802
 msgid "Self-tests completed successfully."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:802
+#: facetfence-product-filters.php:802
 msgid "Self-tests completed, but at least one policy check failed. Review the Health Check table before enabling stricter modes."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:807
+#: facetfence-product-filters.php:807
 msgid "Latest backup restored."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:807
+#: facetfence-product-filters.php:807
 msgid "Could not restore latest backup."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:813
+#: facetfence-product-filters.php:813
 msgid "Cookie secret rotated. Existing human cookies are invalidated."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:935
+#: facetfence-product-filters.php:935
 msgid "Settings saved and rules regenerated."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:935
+#: facetfence-product-filters.php:935
 msgid "Settings saved, but at least one filesystem operation failed. Check file permissions or remove/rewrite rules manually."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1020
+#: facetfence-product-filters.php:1020
 msgid "Live Dashboard"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1022
+#: facetfence-product-filters.php:1022
 msgid "PHP blocked 10m"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1023
+#: facetfence-product-filters.php:1023
 msgid "PHP allowed 10m"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1024
+#: facetfence-product-filters.php:1024
 msgid "PHP distinct IPs 10m"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1025
+#: facetfence-product-filters.php:1025
 msgid "Mode"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1026
+#: facetfence-product-filters.php:1026
 msgid "Server guard"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1026
+#: facetfence-product-filters.php:1026
 msgid "Pre-PHP active"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1026
+#: facetfence-product-filters.php:1026
 msgid "PHP only / inactive"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1027
+#: facetfence-product-filters.php:1027
 msgid "Average score 10m"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1059
+#: facetfence-product-filters.php:1059
 msgid "Quick operational snapshot for the last 10 minutes. These counters are PHP-level event-log counters. If Apache/LiteSpeed .htaccess guard blocks a request before WordPress loads, the request is protected but cannot be counted here; use server access logs for those pre-PHP hits."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1060
+#: facetfence-product-filters.php:1060
 msgid "Shows the latest internal health checks. These tests verify the homepage, the configured WooCommerce shop/category test path, protected filtered URLs, cookie behavior, XML-RPC blocking, and robots.txt availability."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1061
+#: facetfence-product-filters.php:1061
 msgid "Recent allow/block/noindex/mode/test events. This section helps you confirm which URLs matched the policy, which action was taken, and whether traffic looks like normal filtering or automated crawling."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1062
+#: facetfence-product-filters.php:1062
 msgid "Controls the main protection policy and the server-level guard. Start with Monitor Only to learn traffic patterns, use SEO Soft for indexing control, use Cookie mode for normal protection, and reserve Cookie + Referer, Strict, or Emergency for active floods."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1063
+#: facetfence-product-filters.php:1063
 msgid "Defines how expensive a filtered archive URL is. More filter parameters, longer queries, and configured query keys increase the score. The score decides when cookies are required, when requests are blocked, and when emergency behavior should apply."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1064
+#: facetfence-product-filters.php:1064
 msgid "Configures the lightweight first-party human cookie. Signed and rotating cookies make simple bot replay harder while keeping real visitors fast after their first valid page view. Very strict binding can affect visitors behind changing networks."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1065
+#: facetfence-product-filters.php:1065
 msgid "Controls what the plugin records and how much personally identifiable data is stored. Hash or anonymize IPs for privacy, keep retention short, and enable sampling to avoid database pressure during large crawl floods."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1066
+#: facetfence-product-filters.php:1066
 msgid "Automatically escalates protection when traffic volume crosses configured thresholds, then returns to the base recovery mode after the site is quiet. Tune thresholds carefully so seasonal traffic spikes do not trigger aggressive blocking."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1067
+#: facetfence-product-filters.php:1067
 msgid "Optional PHP-level rate limiting using WordPress transients or object cache. It is useful as a safety net, but high-volume attacks are better handled with .htaccess, Nginx, Cloudflare, or other edge/server rules."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1068
+#: facetfence-product-filters.php:1068
 msgid "Validates declared search bots before trusting their user-agent names. This protects against fake Googlebot/Bingbot strings while allowing verified crawlers to receive gentler handling where appropriate."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1069
+#: facetfence-product-filters.php:1069
 msgid "Safety controls for rule deployment and cleanup. Health checks catch broken server rules after saving; rollback can restore the latest backup; uninstall cleanup controls whether generated files are removed when deleting the plugin."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1070
+#: facetfence-product-filters.php:1070
 msgid "Copy-ready Apache/LiteSpeed, Nginx, and Cloudflare rules for environments where automatic file writing is not possible or where edge blocking is preferred. Apply only the rule set that matches your server/CDN."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1071
+#: facetfence-product-filters.php:1071
 msgid "Lists backups created before the plugin changes managed files such as .htaccess, robots.txt, or blocked-light.html. Use these backups to recover quickly from a bad rule deployment."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1072
+#: facetfence-product-filters.php:1072
 msgid "Manual maintenance tools for tests, rewriting/removing managed rules, restoring the latest backup, rotating cookie secrets, and exporting event logs. Use destructive actions carefully on production sites."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1073
+#: facetfence-product-filters.php:1073
 msgid "Main behavior switch. Monitor Only is safest for observation; SEO Soft adds indexing controls; Cookie mode protects filtered URLs while allowing real visitors; Cookie + Referer is stricter; Strict/Emergency are high-impact blocking modes."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1074
+#: facetfence-product-filters.php:1074
 msgid "The mode Auto Emergency returns to after the recovery period. Choose a stable everyday mode such as Monitor, SEO Soft, or Cookie; do not use Emergency as the recovery target."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1075
+#: facetfence-product-filters.php:1075
 msgid "When enabled on Apache/LiteSpeed, the plugin writes rewrite rules that block expensive filtered URLs before WordPress/PHP loads. This is faster than PHP blocking but cannot honor WordPress role allowlists."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1076
+#: facetfence-product-filters.php:1076
 msgid "Blocks xmlrpc.php at PHP and managed .htaccess levels. Enable this when XML-RPC is not needed for Jetpack, mobile publishing, or legacy integrations."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1077
+#: facetfence-product-filters.php:1077
 msgid "HTTP response used for blocked requests. 403 clearly means forbidden; 404 hides the route from basic bots. Keep behavior consistent with your SEO and monitoring expectations."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1078
+#: facetfence-product-filters.php:1078
 msgid "Regular expression for URL paths that should be protected, usually WooCommerce shop/category archives. Keep it narrow, for example product-category and shop paths, so normal pages are not affected."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1079
+#: facetfence-product-filters.php:1079
 msgid "Regular expression for expensive query parameter names such as filter_*, query_type_*, price filters, ordering, stock status, and view changes. These keys identify layered-navigation crawl targets."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1080
-msgid "Optional legacy cookie-name compatibility for PHP checks only. Generated server/CDN rules use the current Filter Guard cookie names, and real validation still requires the signed HMAC cookie in PHP."
+#: facetfence-product-filters.php:1080
+msgid "Optional legacy cookie-name compatibility for PHP checks only. Generated server/CDN rules use the current FacetFence cookie names, and real validation still requires the signed HMAC cookie in PHP."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1081
+#: facetfence-product-filters.php:1081
 msgid "IPs or CIDR/range patterns that bypass PHP-level checks. Use only for trusted admins, monitoring systems, or known internal networks. This does not bypass pre-PHP .htaccess blocking."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1082
+#: facetfence-product-filters.php:1082
 msgid "Optional PHP-level bypass for trusted user agents. Keep this very narrow because user-agent strings are easy to spoof unless combined with verified-bot checks."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1083
+#: facetfence-product-filters.php:1083
 msgid "Comma-separated WordPress role slugs allowed through PHP-level protection. This is useful for admins/shop managers, but server-level .htaccess rules run before WordPress knows the user role."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1084
+#: facetfence-product-filters.php:1084
 msgid "Number of filter/query parameters allowed before the URL is considered too complex. Lower values are stricter; higher values allow deeper customer filtering but may increase crawl load."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1085
+#: facetfence-product-filters.php:1085
 msgid "Maximum full query-string length before extra score is added. Very long query strings often indicate crawler-generated combinations or attack traffic."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1086
+#: facetfence-product-filters.php:1086
 msgid "Score level where the plugin starts requiring a valid human cookie in cookie-based modes. Set below the block score so real users can be challenged before being blocked."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1087
+#: facetfence-product-filters.php:1087
 msgid "Score level where the plugin blocks a request in blocking modes. Increase this if legitimate filter combinations are being blocked; decrease it during severe floods."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1088
+#: facetfence-product-filters.php:1088
 msgid "Very high score threshold that marks a request as emergency-level complexity. Use this to catch extreme filter combinations even before volume-based thresholds trigger."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1089
+#: facetfence-product-filters.php:1089
 msgid "In SEO Soft Mode, filter URLs up to this score can receive noindex/canonical handling while higher-score URLs can be redirected to a clean URL or blocked, depending on the selected action."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1090
+#: facetfence-product-filters.php:1090
 msgid "Sets a lightweight first-party HttpOnly cookie for real visitors. Cookie-based protection depends on this unless another trusted flow sets a compatible cookie."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1091
+#: facetfence-product-filters.php:1091
 msgid "Base name for the human cookie. Keep the default unless you have a naming conflict or need to coordinate with existing server/CDN rules."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1092
+#: facetfence-product-filters.php:1092
 msgid "Cookie lifetime in seconds. Shorter TTLs reduce replay window; longer TTLs reduce repeat challenges for real shoppers."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1093
+#: facetfence-product-filters.php:1093
 msgid "Adds HMAC signing, optional daily name rotation, and optional binding to User-Agent or IP prefix. Stronger binding improves abuse resistance but can affect visitors whose browser/network changes frequently."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1094
+#: facetfence-product-filters.php:1094
 msgid "Enables recording of important plugin events such as blocked requests, allowed filtered requests, noindex decisions, mode changes, and self-tests."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1095
+#: facetfence-product-filters.php:1095
 msgid "Where events are stored. Database is easiest to review in WordPress; NDJSON file is useful for server-side analysis; Both gives redundancy but writes more data."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1096
+#: facetfence-product-filters.php:1096
 msgid "Controls IP privacy in logs. Hash only is privacy-friendly, anonymized keeps partial troubleshooting value, and full IP should be used only when you need exact forensic data."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1097
+#: facetfence-product-filters.php:1097
 msgid "Number of days to keep logs before cleanup. Short retention reduces database size and privacy exposure; longer retention helps investigate recurring crawl patterns."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1098
+#: facetfence-product-filters.php:1098
 msgid "Sampling rule for high traffic. After the configured events-per-minute threshold, the plugin records only one out of every N repetitive events while counters still drive protection decisions."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1099
+#: facetfence-product-filters.php:1099
 msgid "Reduces repetitive per-request logging while Emergency mode is active. This protects the database and filesystem when the site is already under heavy crawl pressure."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1100
+#: facetfence-product-filters.php:1100
 msgid "Turns on automatic escalation to Strict/Emergency based on request volume and IP diversity. Keep disabled if you prefer manual mode changes only."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1101
+#: facetfence-product-filters.php:1101
 msgid "Rolling time window used to count filtered and blocked requests for Auto Emergency decisions. Shorter windows react faster; longer windows are smoother but slower."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1102
+#: facetfence-product-filters.php:1102
 msgid "Number of matched requests within the window required to move into Strict mode. Set above normal peak traffic but below flood levels."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1103
+#: facetfence-product-filters.php:1103
 msgid "Number of matched or blocked requests within the window required to move into Emergency mode. This should be higher than the Strict threshold."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1104
+#: facetfence-product-filters.php:1104
 msgid "Minimum number of different IPs seen in the window before emergency escalation. Helps distinguish distributed crawl floods from one aggressive visitor or tool."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1105
+#: facetfence-product-filters.php:1105
 msgid "Quiet period before Auto Emergency returns to the base recovery mode. Increase it if attacks come in waves; decrease it if you want faster recovery."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1106
+#: facetfence-product-filters.php:1106
 msgid "Enables PHP-level rate limits. Useful for moderate abuse, but not a replacement for server/CDN protection during high-volume floods because WordPress must still load."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1107
+#: facetfence-product-filters.php:1107
 msgid "Maximum matching requests from one IP within the rate-limit window before temporary blocking starts."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1108
+#: facetfence-product-filters.php:1108
 msgid "Maximum matching requests from the same approximate network range within the window. Helps slow small bot clusters that rotate nearby IPs."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1109
+#: facetfence-product-filters.php:1109
 msgid "Length of the rate-limit counting window in seconds. Shorter windows are more responsive; longer windows are more tolerant but less immediate."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1110
+#: facetfence-product-filters.php:1110
 msgid "Temporary block duration after a rate limit is exceeded. Keep it long enough to cool down abuse but not so long that accidental blocks persist for hours."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1111
+#: facetfence-product-filters.php:1111
 msgid "Select which search bot families to verify and whether failed verification should be blocked. Verification is important because bot user-agent names can be forged."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1112
+#: facetfence-product-filters.php:1112
 msgid "How long successful bot verification is cached. Higher values reduce DNS/verification overhead; lower values refresh identity checks more often."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1113
+#: facetfence-product-filters.php:1113
 msgid "Maximum complexity score allowed for verified bots before normal protection applies. Use this to keep legitimate crawlers from exploring extremely expensive filter combinations."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1114
+#: facetfence-product-filters.php:1114
 msgid "Runs self-tests after writing managed files. If rollback is enabled and tests fail, the plugin restores the latest backup to avoid leaving broken blocking rules active."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1115
+#: facetfence-product-filters.php:1115
 msgid "Clean WooCommerce shop or category path used for tests before filter parameters are added. It must return 200 so the plugin can distinguish real rule problems from missing pages."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1116
+#: facetfence-product-filters.php:1116
 msgid "Controls cleanup on plugin deletion. Enable when you want .htaccess, robots.txt, and blocked-light.html changes removed automatically during uninstall."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1137
+#: facetfence-product-filters.php:1137
 msgid "Help: %s"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1137
+#: facetfence-product-filters.php:1137
 msgid "More information"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1194
+#: facetfence-product-filters.php:1194
 msgid "Last Health Check / Self-Test"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1210
+#: facetfence-product-filters.php:1210
 msgid "Recent Events"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1242
+#: facetfence-product-filters.php:1242
 msgid "Protection Settings"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1244 filter-guard-for-woocommerce.php:1033
+#: facetfence-product-filters.php:1244 facetfence-product-filters.php:1033
 msgid "Protection mode"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1245
+#: facetfence-product-filters.php:1245
 msgid "Base recovery mode"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1246
+#: facetfence-product-filters.php:1246
 msgid "Manage .htaccess guard"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1247
+#: facetfence-product-filters.php:1247
 msgid "Block XML-RPC"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1248
+#: facetfence-product-filters.php:1248
 msgid "Block response"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1249
+#: facetfence-product-filters.php:1249
 msgid "Protected path regex"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1250
+#: facetfence-product-filters.php:1250
 msgid "Query key regex"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1251
+#: facetfence-product-filters.php:1251
 msgid "Legacy compatible cookie regex"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1252
+#: facetfence-product-filters.php:1252
 msgid "Allowlisted IPs"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1253
+#: facetfence-product-filters.php:1253
 msgid "Allow User-Agent regex"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1254
+#: facetfence-product-filters.php:1254
 msgid "Allow roles"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1257
+#: facetfence-product-filters.php:1257
 msgid "Query Complexity Scoring"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1259
+#: facetfence-product-filters.php:1259
 msgid "Max filter/query params"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1260
+#: facetfence-product-filters.php:1260
 msgid "Max query length"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1261
+#: facetfence-product-filters.php:1261
 msgid "Require cookie at score"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1262
+#: facetfence-product-filters.php:1262
 msgid "Block at score"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1263
+#: facetfence-product-filters.php:1263
 msgid "Emergency score"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1264
+#: facetfence-product-filters.php:1264
 msgid "SEO Soft max score"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1267
+#: facetfence-product-filters.php:1267
 msgid "Signed / Rotating Human Cookie"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1269
+#: facetfence-product-filters.php:1269
 msgid "Set human cookie"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1270
+#: facetfence-product-filters.php:1270
 msgid "Cookie base name"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1271
+#: facetfence-product-filters.php:1271
 msgid "Cookie TTL seconds"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1272
+#: facetfence-product-filters.php:1272
 msgid "Cookie hardening"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1275
+#: facetfence-product-filters.php:1275
 msgid "Event Log / Privacy"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1277
+#: facetfence-product-filters.php:1277
 msgid "Enable event log"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1278
+#: facetfence-product-filters.php:1278
 msgid "Storage"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1279
+#: facetfence-product-filters.php:1279
 msgid "IP logging mode"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1280
+#: facetfence-product-filters.php:1280
 msgid "Retention days"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1281
+#: facetfence-product-filters.php:1281
 msgid "High-traffic log throttling"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1282
+#: facetfence-product-filters.php:1282
 msgid "Emergency log pressure guard"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1285
+#: facetfence-product-filters.php:1285
 msgid "Auto Emergency Mode"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1287
+#: facetfence-product-filters.php:1287
 msgid "Enable Auto Emergency"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1288
+#: facetfence-product-filters.php:1288
 msgid "Window minutes"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1289
+#: facetfence-product-filters.php:1289
 msgid "Strict threshold"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1290
+#: facetfence-product-filters.php:1290
 msgid "Emergency threshold"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1291
+#: facetfence-product-filters.php:1291
 msgid "Distinct IP threshold"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1292
+#: facetfence-product-filters.php:1292
 msgid "Recovery minutes"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1295
+#: facetfence-product-filters.php:1295
 msgid "Rate Limit"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1297
+#: facetfence-product-filters.php:1297
 msgid "Enable rate limit"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1298
+#: facetfence-product-filters.php:1298
 msgid "IP threshold"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1299
+#: facetfence-product-filters.php:1299
 msgid "Range threshold"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1300
+#: facetfence-product-filters.php:1300
 msgid "Window seconds"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1301
+#: facetfence-product-filters.php:1301
 msgid "Block seconds"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1304
+#: facetfence-product-filters.php:1304
 msgid "Verified Search Bots"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1306
+#: facetfence-product-filters.php:1306
 msgid "Bot verification"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1307
+#: facetfence-product-filters.php:1307
 msgid "Verified bot cache TTL"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1308
+#: facetfence-product-filters.php:1308
 msgid "Verified bot max filter score"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1311
+#: facetfence-product-filters.php:1311
 msgid "Health Check / Rollback / Uninstall"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1313
+#: facetfence-product-filters.php:1313
 msgid "Health check after changes"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1314
+#: facetfence-product-filters.php:1314
 msgid "Health check test path"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1315
+#: facetfence-product-filters.php:1315
 msgid "Remove file rules on uninstall"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1317
+#: facetfence-product-filters.php:1317
 msgid "Save Settings & Regenerate Rules"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1326
+#: facetfence-product-filters.php:1326
 msgid "Server Rule Generators"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1346
+#: facetfence-product-filters.php:1346
 msgid "Rollback Backups"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1357
+#: facetfence-product-filters.php:1357
 msgid "Manual Actions / Test Tools"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1358
+#: facetfence-product-filters.php:1358
 msgid "Run Health Check / Self-Tests"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1359
+#: facetfence-product-filters.php:1359
 msgid "Rewrite .htaccess Guard"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1360
+#: facetfence-product-filters.php:1360
 msgid "Remove .htaccess Guard"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1361
+#: facetfence-product-filters.php:1361
 msgid "Rewrite robots.txt Rules"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1362
+#: facetfence-product-filters.php:1362
 msgid "Remove robots.txt Rules"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1363
+#: facetfence-product-filters.php:1363
 msgid "Restore Latest Backup"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1364
+#: facetfence-product-filters.php:1364
 msgid "Rotate Cookie Secret / Invalidate Cookies"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1365
+#: facetfence-product-filters.php:1365
 msgid "Export Events CSV"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2001
+#: facetfence-product-filters.php:2001
 msgid "Homepage"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2003
+#: facetfence-product-filters.php:2003
 msgid "Policy test URL available"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2008
+#: facetfence-product-filters.php:2008
 msgid "Auto-detected a WooCommerce shop/category path. Saving an explicit path is still recommended."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2008
+#: facetfence-product-filters.php:2008
 msgid "Set a real WooCommerce category/shop path to avoid false PASS results from 404 pages."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2020
+#: facetfence-product-filters.php:2020
 msgid "Configured clean test URL"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2021
+#: facetfence-product-filters.php:2021
 msgid "No cookie / no referer"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2022
+#: facetfence-product-filters.php:2022
 msgid "Cookie only"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2023
+#: facetfence-product-filters.php:2023
 msgid "Cookie + internal referer"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2027
+#: facetfence-product-filters.php:2027
 msgid "XML-RPC"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2028
+#: facetfence-product-filters.php:2028
 msgid "robots.txt"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2161
+#: facetfence-product-filters.php:2161
 msgid "Protected path regex is invalid."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2161
+#: facetfence-product-filters.php:2161
 msgid "Query key regex is invalid."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2169
+#: facetfence-product-filters.php:2169
 msgid "Legacy compatible cookie regex is invalid."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2173
+#: facetfence-product-filters.php:2173
 msgid "Allow User-Agent regex is invalid."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2179
+#: facetfence-product-filters.php:2179
 msgid "%s contains characters that are unsafe for single-line Apache RewriteCond rules."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:292
+#: facetfence-product-filters.php:292
 msgid "Settings"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:399
+#: facetfence-product-filters.php:399
 msgid "403"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1035 filter-guard-for-woocommerce.php:1036 filter-guard-for-woocommerce.php:1037
+#: facetfence-product-filters.php:1035 facetfence-product-filters.php:1036 facetfence-product-filters.php:1037
 msgid "Present"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1035
+#: facetfence-product-filters.php:1035
 msgid "Not present"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1036
+#: facetfence-product-filters.php:1036
 msgid "Missing"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1037
+#: facetfence-product-filters.php:1037
 msgid "Not present / virtual only"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1200
+#: facetfence-product-filters.php:1200
 msgid "PASS"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1200
+#: facetfence-product-filters.php:1200
 msgid "CHECK"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:2840
+#: facetfence-product-filters.php:2840
 msgid "Unauthorized"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1013
+#: facetfence-product-filters.php:1013
 msgid "Crawl-flood protection, SEO soft control, signed human cookies, event logging, local rate limiting, rollback, and server rule generation for WooCommerce filtered archive URLs."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1014
+#: facetfence-product-filters.php:1014
 msgid "Apache/LiteSpeed .htaccess rules run before WordPress. Requests blocked by those pre-PHP rules are intentionally not recorded in the WordPress database event log. The Live Dashboard counters below count PHP-level plugin events only."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1016
+#: facetfence-product-filters.php:1016
 msgid "Server guard is active:"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1016
-msgid "A private-window direct request without the Filter Guard human cookie can be blocked by .htaccess before WordPress loads. That is expected protection behavior, but it will not increment PHP dashboard statistics. Check Apache/LiteSpeed access logs for those pre-PHP blocks, or temporarily disable Manage .htaccess guard if you need a PHP-level logging test."
+#: facetfence-product-filters.php:1016
+msgid "A private-window direct request without the FacetFence human cookie can be blocked by .htaccess before WordPress loads. That is expected protection behavior, but it will not increment PHP dashboard statistics. Check Apache/LiteSpeed access logs for those pre-PHP blocks, or temporarily disable Manage .htaccess guard if you need a PHP-level logging test."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1029
+#: facetfence-product-filters.php:1029
 msgid "Dashboard scope:"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1029
+#: facetfence-product-filters.php:1029
 msgid "These counters are based on WordPress/PHP event-log entries. They cannot count requests stopped by Apache/LiteSpeed before WordPress starts."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1034
+#: facetfence-product-filters.php:1034
 msgid "Current human cookie name"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1035
+#: facetfence-product-filters.php:1035
 msgid ".htaccess guard"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1036
+#: facetfence-product-filters.php:1036
 msgid "Light block page"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1037
+#: facetfence-product-filters.php:1037
 msgid "robots.txt block"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1174
+#: facetfence-product-filters.php:1174
 msgid "Cookie + Referer mode is very strict."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1174
-msgid "Direct visits from Google, external links, messaging apps, or browsers that omit the Referer header may receive 403 on protected filtered URLs until a valid Filter Guard cookie and internal referer exist. Use this mode mainly during active crawl floods; Cookie or SEO Soft is usually safer for normal operation."
+#: facetfence-product-filters.php:1174
+msgid "Direct visits from Google, external links, messaging apps, or browsers that omit the Referer header may receive 403 on protected filtered URLs until a valid FacetFence cookie and internal referer exist. Use this mode mainly during active crawl floods; Cookie or SEO Soft is usually safer for normal operation."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1182
+#: facetfence-product-filters.php:1182
 msgid "High-impact blocking mode is active."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1182
+#: facetfence-product-filters.php:1182
 msgid "Review Health Check results and generated server/CDN rules before leaving this mode enabled for long periods."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1195
+#: facetfence-product-filters.php:1195
 msgid "Run at:"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1195
+#: facetfence-product-filters.php:1195
 msgid "Mode:"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1197
+#: facetfence-product-filters.php:1197
 msgid "Test"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1197
+#: facetfence-product-filters.php:1197
 msgid "URL"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1197 filter-guard-for-woocommerce.php:1213
+#: facetfence-product-filters.php:1197 facetfence-product-filters.php:1213
 msgid "Status"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1197
+#: facetfence-product-filters.php:1197
 msgid "X-Robots-Tag"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1197
+#: facetfence-product-filters.php:1197
 msgid "Result"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1197
+#: facetfence-product-filters.php:1197
 msgid "Note"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1211
+#: facetfence-product-filters.php:1211
 msgid "Recent Events shows only requests that reached WordPress/PHP. Requests blocked by generated .htaccess rules before PHP are visible in server access logs, not in this table."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1213
+#: facetfence-product-filters.php:1213
 msgid "Time"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1213
+#: facetfence-product-filters.php:1213
 msgid "Event"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1213
+#: facetfence-product-filters.php:1213
 msgid "Action"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1213
+#: facetfence-product-filters.php:1213
 msgid "Score"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1213
+#: facetfence-product-filters.php:1213
 msgid "URI"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1216
+#: facetfence-product-filters.php:1216
 msgid "No events logged yet."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1234
+#: facetfence-product-filters.php:1234
 msgid "Recommended daily setup"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1234
+#: facetfence-product-filters.php:1234
 msgid "Use Cookie mode, keep .htaccess guard enabled, keep event logging enabled, and run Health Check after rule changes."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1235
+#: facetfence-product-filters.php:1235
 msgid "Advanced settings are collapsed"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1235
+#: facetfence-product-filters.php:1235
 msgid "Open only the section you want to edit. This keeps the page readable while preserving all expert controls."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1236
+#: facetfence-product-filters.php:1236
 msgid "Help icons are contextual"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1236
+#: facetfence-product-filters.php:1236
 msgid "Hover or focus the blue question mark beside a section or setting to see a focused explanation without leaving the page."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1244
+#: facetfence-product-filters.php:1244
 msgid "Default is Monitor Only; it logs and scores only and does not modify SEO tags, cookies, robots, rate limits, XML-RPC, or server blocking."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1245
+#: facetfence-product-filters.php:1245
 msgid "Auto Emergency returns to this mode after the recovery period."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1246
+#: facetfence-product-filters.php:1246
 msgid "Write Apache/LiteSpeed rewrite rules to block expensive filtered URLs before PHP."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1247
+#: facetfence-product-filters.php:1247
 msgid "Block xmlrpc.php at PHP and .htaccess levels when enabled."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1248
+#: facetfence-product-filters.php:1248
 msgid "403 Forbidden"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1248
+#: facetfence-product-filters.php:1248
 msgid "404 Not Found"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1251
-msgid "Optional legacy compatibility only. Generated server rules use only Filter Guard signed cookie names; HMAC validation always happens in PHP."
+#: facetfence-product-filters.php:1251
+msgid "Optional legacy compatibility only. Generated server rules use only FacetFence signed cookie names; HMAC validation always happens in PHP."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1254
+#: facetfence-product-filters.php:1254
 msgid "Comma-separated role slugs for PHP-level guard only."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1264
+#: facetfence-product-filters.php:1264
 msgid "Redirect high-score filters to clean URL"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1264
+#: facetfence-product-filters.php:1264
 msgid "Block high-score filters"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1269
+#: facetfence-product-filters.php:1269
 msgid "Set a lightweight first-party HttpOnly cookie."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1272
+#: facetfence-product-filters.php:1272
 msgid "HMAC-sign cookie value"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1272
+#: facetfence-product-filters.php:1272
 msgid "Rotate cookie name daily"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1272
+#: facetfence-product-filters.php:1272
 msgid "Bind signature to User-Agent"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1272
+#: facetfence-product-filters.php:1272
 msgid "Bind signature to IP prefix"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1277
+#: facetfence-product-filters.php:1277
 msgid "Record blocked/allowed/noindex/mode/test events."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1281
+#: facetfence-product-filters.php:1281
 msgid "Start sampling after"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1281
+#: facetfence-product-filters.php:1281
 msgid "events per minute; keep one event out of"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1281
+#: facetfence-product-filters.php:1281
 msgid "Set threshold to 0 to disable sampling. Sampling protects the database during crawl floods while runtime attack counters still drive Auto Emergency."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1282
+#: facetfence-product-filters.php:1282
 msgid "Skip repetitive per-request block/allow/noindex logs while Emergency mode is active."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1287
+#: facetfence-product-filters.php:1287
 msgid "Automatically switch to strict/emergency when filtered-request or blocked-request thresholds are exceeded."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1297
+#: facetfence-product-filters.php:1297
 msgid "Use best-effort short-lived WordPress transients/object-cache counters. Disabled by default so Monitor mode never blocks unexpectedly; use server/CDN rate limits for high-volume attacks."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1306
+#: facetfence-product-filters.php:1306
 msgid "Block fake search bot user agents when verification fails"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1313
+#: facetfence-product-filters.php:1313
 msgid "Run lightweight self-tests after writing server files."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1313
+#: facetfence-product-filters.php:1313
 msgid "Rollback latest backup if health check fails"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1314
-msgid "Use a real WooCommerce category or shop path that returns 200 before query parameters are added. If left empty, Filter Guard auto-detects and saves the shop/category path when possible."
+#: facetfence-product-filters.php:1314
+msgid "Use a real WooCommerce category or shop path that returns 200 before query parameters are added. If left empty, FacetFence auto-detects and saves the shop/category path when possible."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1314
+#: facetfence-product-filters.php:1314
 msgid "Current effective test path:"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1315
+#: facetfence-product-filters.php:1315
 msgid "When uninstalling, remove managed .htaccess/robots.txt blocks and blocked-light.html."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1315
+#: facetfence-product-filters.php:1315
 msgid "Important:"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1315
+#: facetfence-product-filters.php:1315
 msgid "If this remains disabled, managed .htaccess and robots.txt blocks may remain after plugin uninstall. Enable it before deleting the plugin when you want full cleanup."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1327
+#: facetfence-product-filters.php:1327
 msgid "Use these generated rules for environments where the plugin cannot safely write server configuration directly."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1328
-msgid "Server/CDN rules only pre-check Filter Guard cookie-name presence; the signed HMAC cookie is still validated in PHP. Prefer the regex Cloudflare expression when your plan supports it; use the fallback expression when regex matching is unavailable."
+#: facetfence-product-filters.php:1328
+msgid "Server/CDN rules only pre-check FacetFence cookie-name presence; the signed HMAC cookie is still validated in PHP. Prefer the regex Cloudflare expression when your plan supports it; use the fallback expression when regex matching is unavailable."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1330
+#: facetfence-product-filters.php:1330
 msgid "Blocking server rules are intentionally not generated in Off, Monitor, or SEO Soft Mode. Switch to Cookie, Cookie + Referer, Strict, or Emergency mode to generate blocking rules."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1334
+#: facetfence-product-filters.php:1334
 msgid "Cloudflare Expression - Regex / stricter"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1335
+#: facetfence-product-filters.php:1335
 msgid "Copy only this expression when the Cloudflare rule editor accepts the regex matches operator. Do not paste the fallback expression together with this one."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1337
+#: facetfence-product-filters.php:1337
 msgid "Cloudflare Expression - No-regex fallback"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1338
+#: facetfence-product-filters.php:1338
 msgid "Use only this fallback expression if your Cloudflare plan or rules UI rejects regex matching."
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1347
+#: facetfence-product-filters.php:1347
 msgid "Backup"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1347
+#: facetfence-product-filters.php:1347
 msgid "Files"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1347
+#: facetfence-product-filters.php:1347
 msgid "Reason"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php:1348
+#: facetfence-product-filters.php:1348
 msgid "No backups yet."
 msgstr ""
 
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid ".htaccess Diagnostics"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Path"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Exists"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Readable / writable"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Managed block"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Current SHA-256"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Filesystem method"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Last write result"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Last hash before / after"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Health-check bypass token"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Compatible cookie-name regex"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Trusted proxy / real IP"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Expand all settings"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Collapse advanced settings"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Collapsed"
 msgstr ""
 
-#: filter-guard-for-woocommerce.php
+#: facetfence-product-filters.php
 msgid "Expanded"
+msgstr ""
+
+#: facetfence-product-filters.php
+msgid "Not required for current mode"
 msgstr ""

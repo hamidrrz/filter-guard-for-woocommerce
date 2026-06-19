@@ -1,4 +1,4 @@
-# Filter Guard for WooCommerce
+# FacetFence Product Filters
 
 [![License: GPL v2 or later](https://img.shields.io/badge/license-GPLv2%2B-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5%2B-blue.svg)](https://wordpress.org/)
@@ -6,7 +6,7 @@
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4.svg)](https://www.php.net/)
 [![WooCommerce](https://img.shields.io/badge/WooCommerce-8.0%2B-96588A.svg)](https://woocommerce.com/)
 
-**Filter Guard for WooCommerce** is a defensive WordPress plugin for WooCommerce stores that receive crawler, bot, or accidental traffic spikes against expensive layered-filter archive URLs.
+**FacetFence Product Filters** is a defensive WordPress plugin for WooCommerce stores that receive crawler, bot, or accidental traffic spikes against expensive layered-filter archive URLs.
 
 It is designed to reduce the operational impact of URLs such as:
 
@@ -75,11 +75,11 @@ WC tested up to: 9.5
    wp-content/plugins/filter-guard-for-woocommerce/
    ```
 
-3. Activate **Filter Guard for WooCommerce** from the WordPress admin.
+3. Activate **FacetFence Product Filters** from the WordPress admin.
 4. Open:
 
    ```text
-   Settings → Filter Guard for WooCommerce
+   Settings → FacetFence Product Filters
    ```
 
 5. Keep the plugin in **Monitor** mode first.

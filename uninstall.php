@@ -1,8 +1,8 @@
 <?php
 /**
- * Uninstall cleanup for Filter Guard for WooCommerce.
+ * Uninstall cleanup for FacetFence Product Filters.
  *
- * @package FilterGuardForWooCommerce
+ * @package FacetFence
  */
 
 if (!defined('WP_UNINSTALL_PLUGIN')) {
@@ -12,26 +12,26 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 /**
  * Remove a managed marker block from a text file through WP_Filesystem.
  *
- * @param WP_Filesystem_Base $woo_filter_guard_fs Filesystem instance.
- * @param string             $woo_filter_guard_path File path.
- * @param string             $woo_filter_guard_begin Begin marker.
- * @param string             $woo_filter_guard_end End marker.
+ * @param WP_Filesystem_Base $facetfence_fs Filesystem instance.
+ * @param string             $facetfence_path File path.
+ * @param string             $facetfence_begin Begin marker.
+ * @param string             $facetfence_end End marker.
  * @return void
  */
-function woo_filter_guard_uninstall_remove_managed_block($woo_filter_guard_fs, string $woo_filter_guard_path, string $woo_filter_guard_begin, string $woo_filter_guard_end): void
+function facetfence_uninstall_remove_managed_block($facetfence_fs, string $facetfence_path, string $facetfence_begin, string $facetfence_end): void
 {
-    if (!$woo_filter_guard_fs || !$woo_filter_guard_fs->exists($woo_filter_guard_path) || !$woo_filter_guard_fs->is_writable($woo_filter_guard_path)) {
+    if (!$facetfence_fs || !$facetfence_fs->exists($facetfence_path) || !$facetfence_fs->is_writable($facetfence_path)) {
         return;
     }
 
-    $woo_filter_guard_content = $woo_filter_guard_fs->get_contents($woo_filter_guard_path);
-    if (!is_string($woo_filter_guard_content)) {
+    $facetfence_content = $facetfence_fs->get_contents($facetfence_path);
+    if (!is_string($facetfence_content)) {
         return;
     }
 
-    $woo_filter_guard_pattern = '/' . preg_quote($woo_filter_guard_begin, '/') . '.*?' . preg_quote($woo_filter_guard_end, '/') . "\s*/s";
-    $woo_filter_guard_content = (string) preg_replace($woo_filter_guard_pattern, '', $woo_filter_guard_content);
-    $woo_filter_guard_fs->put_contents($woo_filter_guard_path, ltrim($woo_filter_guard_content), FS_CHMOD_FILE);
+    $facetfence_pattern = '/' . preg_quote($facetfence_begin, '/') . '.*?' . preg_quote($facetfence_end, '/') . "\s*/s";
+    $facetfence_content = (string) preg_replace($facetfence_pattern, '', $facetfence_content);
+    $facetfence_fs->put_contents($facetfence_path, ltrim($facetfence_content), FS_CHMOD_FILE);
 }
 
 
@@ -40,16 +40,16 @@ function woo_filter_guard_uninstall_remove_managed_block($woo_filter_guard_fs, s
  *
  * @return string
  */
-function woo_filter_guard_uninstall_public_root_path(): string
+function facetfence_uninstall_public_root_path(): string
 {
     if (!function_exists('get_home_path')) {
         require_once ABSPATH . 'wp-admin/includes/file.php';
     }
 
     if (function_exists('get_home_path')) {
-        $woo_filter_guard_home_path = get_home_path();
-        if (is_string($woo_filter_guard_home_path) && $woo_filter_guard_home_path !== '') {
-            return trailingslashit(wp_normalize_path($woo_filter_guard_home_path));
+        $facetfence_home_path = get_home_path();
+        if (is_string($facetfence_home_path) && $facetfence_home_path !== '') {
+            return trailingslashit(wp_normalize_path($facetfence_home_path));
         }
     }
 
@@ -61,56 +61,52 @@ function woo_filter_guard_uninstall_public_root_path(): string
  *
  * @return void
  */
-function woo_filter_guard_uninstall_cleanup_current_site(): void
+function facetfence_uninstall_cleanup_current_site(): void
 {
-    $woo_filter_guard_options = get_option('woo_filter_guard_options', []);
-    if (!is_array($woo_filter_guard_options)) {
-        $woo_filter_guard_options = [];
+    $facetfence_options = get_option('facetfence_options', []);
+    if (!is_array($facetfence_options)) {
+        $facetfence_options = [];
     }
 
     require_once ABSPATH . 'wp-admin/includes/file.php';
     WP_Filesystem();
     global $wp_filesystem;
 
-    $woo_filter_guard_public_root = woo_filter_guard_uninstall_public_root_path();
+    $facetfence_public_root = facetfence_uninstall_public_root_path();
 
-    $woo_filter_guard_remove_file_rules = !empty($woo_filter_guard_options['remove_file_rules_on_uninstall']);
-    if ($woo_filter_guard_remove_file_rules && $wp_filesystem) {
-        woo_filter_guard_uninstall_remove_managed_block($wp_filesystem, $woo_filter_guard_public_root . '.htaccess', '# BEGIN FILTER_GUARD_FOR_WOOCOMMERCE', '# END FILTER_GUARD_FOR_WOOCOMMERCE');
-        woo_filter_guard_uninstall_remove_managed_block($wp_filesystem, $woo_filter_guard_public_root . '.htaccess', '# BEGIN WOO_FILTER_GUARD', '# END WOO_FILTER_GUARD');
-        woo_filter_guard_uninstall_remove_managed_block($wp_filesystem, $woo_filter_guard_public_root . 'robots.txt', '# BEGIN FILTER_GUARD_FOR_WOOCOMMERCE_ROBOTS', '# END FILTER_GUARD_FOR_WOOCOMMERCE_ROBOTS');
-        woo_filter_guard_uninstall_remove_managed_block($wp_filesystem, $woo_filter_guard_public_root . 'robots.txt', '# BEGIN WOO_FILTER_GUARD_ROBOTS', '# END WOO_FILTER_GUARD_ROBOTS');
+    $facetfence_remove_file_rules = !empty($facetfence_options['remove_file_rules_on_uninstall']);
+    if ($facetfence_remove_file_rules && $wp_filesystem) {
+        facetfence_uninstall_remove_managed_block($wp_filesystem, $facetfence_public_root . '.htaccess', '# BEGIN FACETFENCE_PRODUCT_FILTERS', '# END FACETFENCE_PRODUCT_FILTERS');
+        facetfence_uninstall_remove_managed_block($wp_filesystem, $facetfence_public_root . '.htaccess', '# BEGIN FACETFENCE_LEGACY', '# END FACETFENCE_LEGACY');
+        facetfence_uninstall_remove_managed_block($wp_filesystem, $facetfence_public_root . 'robots.txt', '# BEGIN FACETFENCE_PRODUCT_FILTERS_ROBOTS', '# END FACETFENCE_PRODUCT_FILTERS_ROBOTS');
+        facetfence_uninstall_remove_managed_block($wp_filesystem, $facetfence_public_root . 'robots.txt', '# BEGIN FACETFENCE_LEGACY_ROBOTS', '# END FACETFENCE_LEGACY_ROBOTS');
 
-        $woo_filter_guard_blocked_file = $woo_filter_guard_public_root . 'blocked-light.html';
-        if ($wp_filesystem->exists($woo_filter_guard_blocked_file) && $wp_filesystem->is_writable($woo_filter_guard_blocked_file)) {
-            $wp_filesystem->delete($woo_filter_guard_blocked_file, false, 'f');
+        $facetfence_blocked_file = $facetfence_public_root . 'blocked-light.html';
+        if ($wp_filesystem->exists($facetfence_blocked_file) && $wp_filesystem->is_writable($facetfence_blocked_file)) {
+            $wp_filesystem->delete($facetfence_blocked_file, false, 'f');
         }
     }
 
     if ($wp_filesystem) {
-        $woo_filter_guard_uploads = wp_upload_dir();
-        if (empty($woo_filter_guard_uploads['error']) && !empty($woo_filter_guard_uploads['basedir'])) {
-            $wp_filesystem->delete(trailingslashit($woo_filter_guard_uploads['basedir']) . 'filter-guard-for-woocommerce', true, 'd');
-            $wp_filesystem->delete(trailingslashit($woo_filter_guard_uploads['basedir']) . 'woo-filter-guard', true, 'd');
+        $facetfence_uploads = wp_upload_dir();
+        if (empty($facetfence_uploads['error']) && !empty($facetfence_uploads['basedir'])) {
+            $wp_filesystem->delete(trailingslashit($facetfence_uploads['basedir']) . 'facetfence-product-filters', true, 'd');
         }
-        $wp_filesystem->delete(trailingslashit(WP_CONTENT_DIR) . 'filter-guard-for-woocommerce', true, 'd');
-        $wp_filesystem->delete(trailingslashit(WP_CONTENT_DIR) . 'cache/filter-guard-for-woocommerce', true, 'd');
-        $wp_filesystem->delete(trailingslashit(WP_CONTENT_DIR) . 'cache/woo-filter-guard', true, 'd');
     }
 
     global $wpdb;
-    $woo_filter_guard_table = $wpdb->prefix . 'woo_filter_guard_events';
+    $facetfence_table = $wpdb->prefix . 'facetfence_events';
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Uninstall intentionally removes this plugin's custom event-log table.
-    $wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS %i', $woo_filter_guard_table));
+    $wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS %i', $facetfence_table));
 
-    delete_option('woo_filter_guard_options');
-    delete_option('wfg_options');
-    delete_option('woo_filter_guard_db_version');
-    delete_option('woo_filter_guard_last_test_results');
-    delete_option('wfg_last_test_results');
-    delete_option('woo_filter_guard_cookie_secret_version');
-    delete_option('woo_filter_guard_previous_mode');
-    delete_option('woo_filter_guard_auto_until');
+    delete_option('facetfence_options');
+    delete_option('facetfence_legacy_options');
+    delete_option('facetfence_db_version');
+    delete_option('facetfence_last_test_results');
+    delete_option('facetfence_legacy_last_test_results');
+    delete_option('facetfence_cookie_secret_version');
+    delete_option('facetfence_previous_mode');
+    delete_option('facetfence_auto_until');
 }
 
 /**
@@ -118,21 +114,21 @@ function woo_filter_guard_uninstall_cleanup_current_site(): void
  *
  * @return void
  */
-function woo_filter_guard_uninstall_cleanup(): void
+function facetfence_uninstall_cleanup(): void
 {
     if (is_multisite() && function_exists('get_sites')) {
-        $woo_filter_guard_site_ids = get_sites(['fields' => 'ids', 'number' => 0]);
-        if (is_array($woo_filter_guard_site_ids)) {
-            foreach ($woo_filter_guard_site_ids as $woo_filter_guard_site_id) {
-                switch_to_blog((int) $woo_filter_guard_site_id);
-                woo_filter_guard_uninstall_cleanup_current_site();
+        $facetfence_site_ids = get_sites(['fields' => 'ids', 'number' => 0]);
+        if (is_array($facetfence_site_ids)) {
+            foreach ($facetfence_site_ids as $facetfence_site_id) {
+                switch_to_blog((int) $facetfence_site_id);
+                facetfence_uninstall_cleanup_current_site();
                 restore_current_blog();
             }
             return;
         }
     }
 
-    woo_filter_guard_uninstall_cleanup_current_site();
+    facetfence_uninstall_cleanup_current_site();
 }
 
-woo_filter_guard_uninstall_cleanup();
+facetfence_uninstall_cleanup();
