@@ -14,7 +14,7 @@ It is designed to reduce the operational impact of URLs such as:
 /product-category/network-switches/?filter_brand=cisco&query_type_brand=or&filter_poe=donthave&query_type_poe=or
 ```
 
-These URLs can trigger heavy WooCommerce archive queries, waste crawl budget, generate duplicate indexable URLs, and consume PHP-FPM/Apache/Nginx resources. Filter Guard provides a gradual protection model: start in Monitor mode, review the event log and complexity scores, then enable SEO, cookie, strict, emergency, or server/CDN-level controls when needed.
+These URLs can trigger heavy WooCommerce archive queries, waste crawl budget, generate duplicate indexable URLs, and consume PHP-FPM/Apache/Nginx resources. FacetFence Product Filters provides a gradual protection model: start in Monitor mode, review the event log and complexity scores, then enable SEO, cookie, strict, emergency, or server/CDN-level controls when needed.
 
 ---
 
@@ -72,7 +72,7 @@ WC tested up to: 9.5
 2. Copy the plugin folder to:
 
    ```text
-   wp-content/plugins/filter-guard-for-woocommerce/
+   wp-content/plugins/facetfence-product-filters/
    ```
 
 3. Activate **FacetFence Product Filters** from the WordPress admin.
@@ -151,8 +151,8 @@ Nginx does not process `.htaccess` files. Use the generated Nginx snippets and r
 The generator also includes deny rules for internal plugin data paths, for example:
 
 ```nginx
-location ^~ /wp-content/filter-guard-for-woocommerce/ { deny all; }
-location ^~ /wp-content/cache/filter-guard-for-woocommerce/ { deny all; }
+location ^~ /wp-content/facetfence-product-filters/ { deny all; }
+location ^~ /wp-content/cache/facetfence-product-filters/ { deny all; }
 ```
 
 ### Cloudflare
@@ -165,7 +165,7 @@ Some Cloudflare expression features such as regex matching may depend on the Clo
 
 ## Event Logging and Privacy
 
-Filter Guard can record security events related to expensive filtered URL requests.
+FacetFence Product Filters can record security events related to expensive filtered URL requests.
 
 Depending on configuration, event records may include:
 
@@ -223,7 +223,7 @@ Rollback backups are created for:
 
 ## Multisite
 
-Filter Guard is multisite-aware:
+FacetFence Product Filters is multisite-aware:
 
 - network activation creates per-site runtime options and event tables
 - network deactivation clears scheduled hooks per site
@@ -240,20 +240,20 @@ Server-level rules still depend on each site's public root and should be reviewe
 Run PHP syntax checks:
 
 ```bash
-php -l filter-guard-for-woocommerce.php
+php -l facetfence-product-filters.php
 php -l uninstall.php
 ```
 
 Validate ZIP integrity:
 
 ```bash
-unzip -t filter-guard-for-woocommerce.zip
+unzip -t facetfence-product-filters.zip
 ```
 
 Run WordPress Plugin Check inside a real WordPress installation:
 
 ```bash
-wp plugin check filter-guard-for-woocommerce --checks=plugin_repo
+wp plugin check facetfence-product-filters --checks=plugin_repo
 ```
 
 ### Important implementation notes
@@ -280,7 +280,7 @@ wordpress-plugin, woocommerce, security, crawler, crawl-budget, noindex, rate-li
 
 ### Does this replace a WAF or CDN rate limiter?
 
-No. Filter Guard provides WordPress-level protection and generated server/CDN rules. For very high-volume attacks, use it alongside Cloudflare, Nginx, Apache/LiteSpeed, hosting-level protection, or another WAF.
+No. FacetFence Product Filters provides WordPress-level protection and generated server/CDN rules. For very high-volume attacks, use it alongside Cloudflare, Nginx, Apache/LiteSpeed, hosting-level protection, or another WAF.
 
 ### Does it block normal product pages?
 
@@ -333,3 +333,4 @@ https://www.gnu.org/licenses/gpl-2.0.html
 
 **Hamidreza Rezaei**  
 Website: <https://hrezaei.ir>
+
